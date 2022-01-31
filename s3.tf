@@ -26,7 +26,7 @@ resource "aws_s3_bucket" "this" {
   versioning {
     enabled = var.s3_versioning_is_enabled
   }
-  tags = var.tags
+
 }
 
 # Enforce private
