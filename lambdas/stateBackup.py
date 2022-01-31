@@ -3,11 +3,12 @@ import json
 import logging
 import boto3
 import urllib.request
-from botocore.exceptions import ClientError
 from terrasnek.api import TFC
 from datetime import datetime
 from time import time
-from terrasnek.exceptions import TFCHTTPNotFound
+import ssl
+
+
 # Environment variables
 TFC_TOKEN = os.getenv("TFC_TOKEN", None)
 TFC_URL = os.getenv("TFC_URL", "https://app.terraform.io")
@@ -16,6 +17,7 @@ SSL_VERIFY = os.getenv("SSL_VERIFY", False)
 
 if SSL_VERIFY == 'false' or SSL_VERIFY is False:
     ssl_verify = False
+    ssl._create_default_https_context = ssl._create_unverified_context
 else:
     ssl_verify = True
 
@@ -43,12 +45,9 @@ def upload_file(file_name, bucket, object_name=None):
 
     # Upload the file
     s3_client = boto3.client('s3')
-    try:
-        response = s3_client.upload_file(file_name, bucket, object_name)
-    except ClientError as e:
-        logging.error(e)
-        return False
-    return True
+    response = s3_client.upload_file(file_name, bucket, object_name)
+
+    return response
 
 
 def handler(event, context):

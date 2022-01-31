@@ -1,3 +1,4 @@
+from cmath import log
 import boto3
 import os
 import logging
@@ -12,6 +13,10 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+def flatten(t):
+    return [item for sublist in t for item in sublist]
+
+
 def handler(event, context):
     """Send a report about failed and successfull state backaups
 
@@ -20,21 +25,25 @@ def handler(event, context):
     :return: Success message
     """
 
-    _failed = event['failed']
+    flattened = flatten(event)
 
-    failed = [{"org_id": el['org_id'], "ws": el['ws'], "Error": {
-        "errorType": el['Error']['errorType'], 'errorMessage': el['Error']['errorMessage']}} for el in _failed]
+    # Succesful backups
+    successful = [el for el in flattened if 'Error' not in el]
+    logger.info("Successful backups:")
+    logger.info(successful)
 
-    successful = event['successful']
+    # Failed backups
+    failed = [el for el in flattened if 'Error' in el]
+    logger.info("Failed backups:")
+    logger.info(failed)
+
     message = f"""
     
-The following state backups were successful:
-    
-{json.dumps(successful, indent=4, sort_keys=False)}
+{len(successful)} state backups were successful. More information can be found in the logs
         
 ----------------------------------------------------------------------------------------
     
-The following state backups failed:
+{len(failed)} state backups failed:
     
 {json.dumps(failed, indent=4, sort_keys=False)}
         

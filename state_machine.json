@@ -116,15 +116,7 @@
               
             }
            
-        },
-        "Sort Result": {
-            "Type": "Pass",
-            "ResultPath": "$",
-             "Parameters": {
-                 "successful.$": "$.[0]",
-                 "failed.$": "$.[1]"
-             },
-            "Next": "Send Report"
+        }
         },
         "Send Report": {
             "Type": "Task",
