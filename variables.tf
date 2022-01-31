@@ -4,7 +4,7 @@ variable "aws_region" {
   default     = "eu-central-1"
 }
 
-variable "tags" {
+variable "default_tags" {
   type        = map(any)
   description = "Tags to apply to all resources"
   default     = {}
