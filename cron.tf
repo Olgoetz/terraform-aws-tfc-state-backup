@@ -1,4 +1,3 @@
-
 # Cron expression
 resource "aws_cloudwatch_event_rule" "state_backup" {
   name                = "${local.resource_prefix}CW-EventRule"
