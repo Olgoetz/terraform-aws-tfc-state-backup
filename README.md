@@ -17,7 +17,9 @@ The solution backups all Terraform Cloud's workspaces' states in case of an acce
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.2.0 |
 
 ## Providers
 
