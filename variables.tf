@@ -10,16 +10,6 @@ variable "tags" {
   default     = {}
 }
 
-variable "tfc_workspace" {
-  type        = string
-  description = "Name of the Terraform Workspace"
-}
-
-variable "tfc_organization" {
-  type        = string
-  description = "Name of the Terraform Organization"
-}
-
 variable "tfc_token" {
   type        = string
   description = "Token for authenticating against Terraform Cloud"
@@ -37,6 +27,11 @@ variable "s3_versioning_is_enabled" {
   default     = true
 }
 
+variable "s3_force_destroy" {
+  type        = bool
+  description = "Force destruction of S3 bucket by emptying it"
+  default     = false
+}
 variable "state_backup_retention_time" {
   type        = number
   description = "Retention time in days for state backup"

@@ -1,8 +1,9 @@
 # S3 bucket to store state versions
 resource "aws_s3_bucket" "this" {
 
-  bucket = "${lower(local.resource_prefix)}${lower(var.tfc_organization)}-${lower(var.tfc_workspace)}-${data.aws_caller_identity.current.account_id}"
-  acl    = "private"
+  bucket        = "${lower(local.resource_prefix)}bucket-${data.aws_caller_identity.current.account_id}"
+  acl           = "private"
+  force_destroy = var.s3_force_destroy
 
   lifecycle_rule {
     id      = "expire"

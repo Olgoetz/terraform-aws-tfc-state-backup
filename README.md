@@ -87,15 +87,14 @@ No modules.
 | <a name="input_create_lambda_vpc_config"></a> [create\_lambda\_vpc\_config](#input\_create\_lambda\_vpc\_config) | Create VPC config for 'organizations', 'workspaces' and 'statebackup' lambda | `bool` | `false` | no |
 | <a name="input_cw_cron_expression"></a> [cw\_cron\_expression](#input\_cw\_cron\_expression) | Cron job to schedule the state backup | `string` | `"cron(0 23 * * ? *)"` | no |
 | <a name="input_kms_key_alias"></a> [kms\_key\_alias](#input\_kms\_key\_alias) | KMS key alias | `string` | `""` | no |
+| <a name="input_s3_force_destroy"></a> [s3\_force\_destroy](#input\_s3\_force\_destroy) | Force destruction of S3 bucket by emptying it | `bool` | `false` | no |
 | <a name="input_s3_versioning_is_enabled"></a> [s3\_versioning\_is\_enabled](#input\_s3\_versioning\_is\_enabled) | Enable/Disable versioning for s3 | `bool` | `true` | no |
 | <a name="input_sns_email_addresses"></a> [sns\_email\_addresses](#input\_sns\_email\_addresses) | List of email addresses to send reports to | `list(string)` | `[]` | no |
 | <a name="input_state_backup_retention_time"></a> [state\_backup\_retention\_time](#input\_state\_backup\_retention\_time) | Retention time in days for state backup | `number` | `30` | no |
 | <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | List of subnet ids if creating vpc vonfig for lambdas | `list(string)` | `[]` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to all resources | `map(any)` | `{}` | no |
-| <a name="input_tfc_organization"></a> [tfc\_organization](#input\_tfc\_organization) | Name of the Terraform Organization | `string` | n/a | yes |
 | <a name="input_tfc_token"></a> [tfc\_token](#input\_tfc\_token) | Token for authenticating against Terraform Cloud | `string` | n/a | yes |
 | <a name="input_tfc_url"></a> [tfc\_url](#input\_tfc\_url) | URL of the Terraform host | `string` | `"https://app.terraform.io"` | no |
-| <a name="input_tfc_workspace"></a> [tfc\_workspace](#input\_tfc\_workspace) | Name of the Terraform Workspace | `string` | n/a | yes |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC id if creating vpc config for lambdas | `string` | `""` | no |
 
 ## Outputs
