@@ -244,6 +244,15 @@ resource "aws_iam_policy_attachment" "s3" {
   policy_arn = aws_iam_policy.s3.arn
 }
 
+# EC2 policy
+resource "aws_iam_policy_attachment" "ec2" {
+  count      = var.create_lambda_vpc_config ? 1 : 0
+  name       = "${aws_iam_role.this.name}-attachment"
+  roles      = [aws_iam_role.this.name]
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
+
 # KMS policy
 data "aws_iam_policy_document" "kms" {
   count = var.kms_key_alias != "" ? 1 : 0
