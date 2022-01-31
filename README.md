@@ -19,7 +19,7 @@ The solution backups all Terraform Cloud's workspaces' states in case of an acce
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.2.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.72.0 |
 
 ## Providers
 
