@@ -1,6 +1,6 @@
 resource "aws_sns_topic" "report" {
   name              = "${local.resource_prefix}SNS-ReportTopic"
-  kms_master_key_id = var.kms_key_alias ? data.aws_kms_alias.this[0].name : "alias/aws/sns"
+  kms_master_key_id = var.kms_key_alias != "" ? data.aws_kms_alias.this[0].name : "alias/aws/sns"
 }
 
 resource "aws_sns_topic_subscription" "email" {
