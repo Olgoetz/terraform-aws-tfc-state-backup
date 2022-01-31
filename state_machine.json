@@ -1,0 +1,142 @@
+{
+    "StartAt": "Get Organizations",
+    "States": {
+        "Get Organizations": {
+            "Type": "Task",
+            "Resource": "${get_organizations_lambda}",
+            "ResultPath": "$.org_ids",
+            "Next": "Backup Workspace State",
+            "Retry": [ {
+                "ErrorEquals": [ "Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+             } ],
+             "Catch": [ {
+                "ErrorEquals": [ "TFCHTTPNotFound" , "TFCHTTPNotFound", "TFCHTTPBadRequest"],
+                "Next": "Error Handler Organizations",
+                "ResultPath": "$.result"
+             } ]
+        },
+
+        "Error Handler Organizations": {
+            "Type": "Pass",
+            "ResultPath": "$",
+            "Parameters": {
+                "Error.$": "States.StringToJson($.result.Cause)"
+              },
+            "End": true
+         },
+        "Backup Workspace State": {
+            "Type": "Map",
+            "ItemsPath": "$.org_ids",
+            "ResultPath": "$",
+            "MaxConcurrency": 5,
+            "Next": "Sort Result",
+            "Iterator": {
+                "StartAt": "List Workspaces",
+                "States": {
+                    "List Workspaces": {
+                        "Type": "Task",
+                        "Resource": "${list_workspaces_lambda}",
+                        "ResultPath":"$.ws",
+                        "Next": "Save State to S3",
+                        "Retry": [ {
+                            "ErrorEquals": [ "Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+                            "IntervalSeconds": 2,
+                            "MaxAttempts": 6,
+                            "BackoffRate": 2
+                         } ],
+                         "Catch": [ {
+                            "ErrorEquals": [ "TFCHTTPNotFound" , "TFCHTTPNotFound", "TFCHTTPBadRequest"],
+                            "Next": "Error Handler Workspaces",
+                            "ResultPath": "$.result"
+                         } ]
+
+                    },
+                    "Error Handler Workspaces": {
+                        "Type": "Pass",
+                        "ResultPath": "$",
+                        "Parameters": {
+                            "org_id.$": "$.org_id",
+                            "ws.$": "$.ws",
+                            "Error.$": "States.StringToJson($.result.Cause)"
+                          },
+                        "End": true
+                     },
+                    "Save State to S3": {
+                        "Type": "Map",
+                        "ItemsPath": "$.ws",
+                        "Parameters": {
+                            "ws.$": "$$.Map.Item.Value",
+                            "org_id.$": "$.org_id"
+                          },
+                        "ResultPath": "$",
+                        "MaxConcurrency": 5,
+                        "End": true,
+                        "Iterator": {
+                            "StartAt": "Backup State",
+                            "States": {
+                                "Backup State": {
+                                    "Type": "Task",
+                                    "Resource": "${backup_state_lambda}",
+                                    "ResultPath": "$.result",
+                                    "Retry": [ {
+                                        "ErrorEquals": [ "Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+                                        "IntervalSeconds": 2,
+                                        "MaxAttempts": 6,
+                                        "BackoffRate": 2
+                                     } ],
+                                    "Catch": [ {
+                                        "ErrorEquals": [ "TFCHTTPNotFound" , "TFCHTTPNotFound", "TFCHTTPBadRequest"],
+                                        "Next": "Error Handler Backup",
+                                        "ResultPath": "$.result"
+                                     } ],
+                                    "End": true
+                                
+                            
+                                },
+                                "Error Handler Backup": {
+                                    "Type": "Pass",
+                                    "ResultPath": "$",
+                                    "Parameters": {
+                                        "org_id.$": "$.org_id",
+                                        "ws.$": "$.ws",
+                                        "Error.$": "States.StringToJson($.result.Cause)"
+                                      },
+                                    "End": true
+                                 }
+                            }
+                           
+                        }
+                      
+                    }
+                }
+               
+              
+            }
+           
+        },
+        "Sort Result": {
+            "Type": "Pass",
+            "ResultPath": "$",
+             "Parameters": {
+                 "successful.$": "$.[0]",
+                 "failed.$": "$.[1]"
+             },
+            "Next": "Send Report"
+        },
+        "Send Report": {
+            "Type": "Task",
+            "Resource": "${send_report_lambda}",
+            "ResultPath": "$",
+            "Retry": [ {
+                "ErrorEquals": [ "Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+             } ],
+            "End": true
+        }
+    }
+}

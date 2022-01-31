@@ -1,0 +1,8 @@
+# created by virtualenv automatically
+venv/
+*.zip
+*.cfg
+.terraform/
+.DS_Store
+.idea/
+*.tfstate*
