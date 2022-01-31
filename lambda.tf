@@ -78,13 +78,14 @@ resource "aws_lambda_function" "organizations" {
   }
   environment {
     variables = {
-      TFC_URL   = var.tfc_url
-      TFC_TOKEN = var.tfc_token
+      TFC_URL    = var.tfc_url
+      TFC_TOKEN  = var.tfc_token
+      SSL_VERIFY = var.tfc_ssl_verify
     }
   }
 }
 
-# sources/organizations.py
+# sources/workspaces.py
 
 data "archive_file" "workspaces" {
   type        = "zip"
@@ -116,8 +117,9 @@ resource "aws_lambda_function" "workspaces" {
 
   environment {
     variables = {
-      TFC_URL   = var.tfc_url
-      TFC_TOKEN = var.tfc_token
+      TFC_URL    = var.tfc_url
+      TFC_TOKEN  = var.tfc_token
+      SSL_VERIFY = var.tfc_ssl_verify
     }
   }
 }
@@ -153,9 +155,10 @@ resource "aws_lambda_function" "statebackup" {
   }
   environment {
     variables = {
-      TFC_URL   = var.tfc_url
-      TFC_TOKEN = var.tfc_token
-      S3_BUCKET = aws_s3_bucket.this.bucket
+      TFC_URL    = var.tfc_url
+      TFC_TOKEN  = var.tfc_token
+      S3_BUCKET  = aws_s3_bucket.this.bucket
+      SSL_VERIFY = var.tfc_ssl_verify
     }
   }
 }

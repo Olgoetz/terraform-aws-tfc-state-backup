@@ -98,6 +98,7 @@ No modules.
 | <a name="input_sns_email_addresses"></a> [sns\_email\_addresses](#input\_sns\_email\_addresses) | List of email addresses to send reports to | `list(string)` | `[]` | no |
 | <a name="input_state_backup_retention_time"></a> [state\_backup\_retention\_time](#input\_state\_backup\_retention\_time) | Retention time in days for state backup | `number` | `30` | no |
 | <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | List of subnet ids if creating vpc vonfig for lambdas | `list(string)` | `[]` | no |
+| <a name="input_tfc_ssl_verify"></a> [tfc\_ssl\_verify](#input\_tfc\_ssl\_verify) | Enable HTTPS | `bool` | `true` | no |
 | <a name="input_tfc_token"></a> [tfc\_token](#input\_tfc\_token) | Token for authenticating against Terraform Cloud | `string` | n/a | yes |
 | <a name="input_tfc_url"></a> [tfc\_url](#input\_tfc\_url) | URL of the Terraform host | `string` | `"https://app.terraform.io"` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC id if creating vpc config for lambdas | `string` | `""` | no |

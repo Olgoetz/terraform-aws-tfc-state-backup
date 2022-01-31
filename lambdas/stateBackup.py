@@ -12,9 +12,10 @@ from terrasnek.exceptions import TFCHTTPNotFound
 TFC_TOKEN = os.getenv("TFC_TOKEN", None)
 TFC_URL = os.getenv("TFC_URL", "https://app.terraform.io")
 S3_BUCKET = os.getenv("S3_BUCKET", None)
+SSL_VERIFY = os.getenv("SSL_VERIFY", False)
 
 # Initialize api
-api = TFC(TFC_TOKEN, url=TFC_URL)
+api = TFC(TFC_TOKEN, url=TFC_URL, verify=SSL_VERIFY)
 
 
 # Logger

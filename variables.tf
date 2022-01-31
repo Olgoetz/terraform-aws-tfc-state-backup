@@ -21,6 +21,12 @@ variable "tfc_url" {
   description = "URL of the Terraform host"
   default     = "https://app.terraform.io"
 }
+
+variable "tfc_ssl_verify" {
+  type        = bool
+  description = "Enable HTTPS"
+  default     = true
+}
 variable "s3_versioning_is_enabled" {
   type        = bool
   description = "Enable/Disable versioning for s3"
