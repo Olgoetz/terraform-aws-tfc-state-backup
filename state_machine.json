@@ -32,7 +32,7 @@
             "ItemsPath": "$.org_ids",
             "ResultPath": "$",
             "MaxConcurrency": 5,
-            "Next": "Sort Result",
+            "Next": "Send Report",
             "Iterator": {
                 "StartAt": "List Workspaces",
                 "States": {
@@ -116,7 +116,6 @@
               
             }
            
-        }
         },
         "Send Report": {
             "Type": "Task",
