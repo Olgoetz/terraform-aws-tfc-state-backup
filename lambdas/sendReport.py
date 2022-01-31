@@ -39,7 +39,7 @@ def handler(event, context):
 
     message = f"""
     
-{len(successful)} state backups were successful. More information can be found in the logs
+{len(successful)} state backups were successful. More information can be found in the logs.
         
 ----------------------------------------------------------------------------------------
     
