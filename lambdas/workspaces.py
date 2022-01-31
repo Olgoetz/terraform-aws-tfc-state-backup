@@ -8,9 +8,13 @@ TFC_TOKEN = os.getenv("TFC_TOKEN", None)
 TFC_URL = os.getenv("TFC_URL", "https://app.terraform.io")
 SSL_VERIFY = os.getenv("SSL_VERIFY", False)
 
-# Initialize api
-api = TFC(TFC_TOKEN, url=TFC_URL, verify=SSL_VERIFY)
+if SSL_VERIFY == 'false' or SSL_VERIFY is False:
+    ssl_verify = False
+else:
+    ssl_verify = True
 
+# Initialize api
+api = TFC(TFC_TOKEN, url=TFC_URL, verify=ssl_verify)
 
 # Logger
 logger = logging.getLogger()

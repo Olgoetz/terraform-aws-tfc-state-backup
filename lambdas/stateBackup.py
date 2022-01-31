@@ -14,8 +14,13 @@ TFC_URL = os.getenv("TFC_URL", "https://app.terraform.io")
 S3_BUCKET = os.getenv("S3_BUCKET", None)
 SSL_VERIFY = os.getenv("SSL_VERIFY", False)
 
+if SSL_VERIFY == 'false' or SSL_VERIFY is False:
+    ssl_verify = False
+else:
+    ssl_verify = True
+
 # Initialize api
-api = TFC(TFC_TOKEN, url=TFC_URL, verify=SSL_VERIFY)
+api = TFC(TFC_TOKEN, url=TFC_URL, verify=ssl_verify)
 
 
 # Logger

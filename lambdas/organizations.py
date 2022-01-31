@@ -2,7 +2,7 @@ import os
 import json
 import logging
 
-from rsa import verify
+
 import boto3
 import urllib.request
 from botocore.exceptions import ClientError
@@ -16,8 +16,13 @@ TFC_TOKEN = os.getenv("TFC_TOKEN", None)
 TFC_URL = os.getenv("TFC_URL", "https://app.terraform.io")
 SSL_VERIFY = os.getenv("SSL_VERIFY", False)
 
+if SSL_VERIFY == 'false' or SSL_VERIFY is False:
+    ssl_verify = False
+else:
+    ssl_verify = True
+
 # Initialize api
-api = TFC(TFC_TOKEN, url=TFC_URL, verify=SSL_VERIFY)
+api = TFC(TFC_TOKEN, url=TFC_URL, verify=ssl_verify)
 
 
 # Logger
@@ -25,7 +30,6 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 orgs = api.orgs.list()
-print(orgs["data"])
 
 
 def handler(event, context):
