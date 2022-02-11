@@ -49,14 +49,8 @@ data "aws_iam_policy_document" "cw_role_policy" {
 }
 
 # Policy resource
-resource "aws_iam_policy" "cw_role_policy" {
+resource "aws_iam_role_policy" "cw_role_policy" {
   name   = "${local.resource_prefix}CWEvent-Policy"
   policy = data.aws_iam_policy_document.cw_role_policy.json
-}
-
-# Policy attachment
-resource "aws_iam_policy_attachment" "cw_role" {
-  name       = "${aws_iam_role.cw_role.name}-attachment"
-  roles      = [aws_iam_role.cw_role.name]
-  policy_arn = aws_iam_policy.cw_role_policy.arn
+  role = aws_iam_role.cw_role.id
 }
