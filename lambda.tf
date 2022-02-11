@@ -237,6 +237,7 @@ data "aws_iam_policy_document" "s3" {
 }
 
 resource "aws_iam_role_policy" "s3" {
+   name   = "${local.resource_prefix}S3-Policy"
   role = aws_iam_role.this.name
   policy = data.aws_iam_policy_document.s3.json
 }
@@ -261,6 +262,7 @@ data "aws_iam_policy_document" "kms" {
 
 resource "aws_iam_role_policy" "kms" {
   count  = var.kms_key_alias != "" ? 1 : 0
+   name   = "${local.resource_prefix}KMS-Policy"
   policy = data.aws_iam_policy_document.kms[0].json
   role = aws_iam_role.this.name
 }
@@ -277,6 +279,7 @@ data "aws_iam_policy_document" "sns" {
 }
 
 resource "aws_iam_role_policy" "sns" {
+  name   = "${local.resource_prefix}SNS-Policy"
   policy = data.aws_iam_policy_document.sns.json
   role = aws_iam_role.this.name
 }
