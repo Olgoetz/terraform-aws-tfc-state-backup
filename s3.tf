@@ -1,34 +1,52 @@
 # S3 bucket to store state versions
 resource "aws_s3_bucket" "this" {
-
   bucket        = "${lower(local.resource_prefix)}bucket-${data.aws_caller_identity.current.account_id}"
-  acl           = "private"
   force_destroy = var.s3_force_destroy
+}
 
-  lifecycle_rule {
-    id      = "expire"
-    enabled = true
+# S3 ACL
+resource "aws_s3_bucket_acl" "this" {
+  bucket = aws_s3_bucket.this.id
+  acl    = "private"
+}
+
+# Lifecycle
+resource "aws_s3_bucket_lifecycle_configuration" "this" {
+  bucket = aws_s3_bucket.this.id
+
+  rule {
+    id     = "expire"
+    status = "Enabled"
 
 
     expiration {
       days = var.state_backup_retention_time
     }
   }
+}
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm     = "aws:kms"
-        kms_master_key_id = var.kms_key_alias != "" ? data.aws_kms_alias.this[0].target_key_id : null
-      }
+# Enable encryption
+resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
+  bucket = aws_s3_bucket.this.bucket
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm     = "aws:kms"
+      kms_master_key_id = var.kms_key_alias != "" ? data.aws_kms_alias.this[0].target_key_id : null
     }
   }
-
-  versioning {
-    enabled = var.s3_versioning_is_enabled
-  }
-
 }
+
+# Activate versioning
+resource "aws_s3_bucket_versioning" "this" {
+  bucket = aws_s3_bucket.this.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+
+
 
 # Enforce private
 resource "aws_s3_bucket_public_access_block" "this" {
