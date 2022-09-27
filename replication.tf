@@ -1,6 +1,6 @@
 resource "aws_iam_role" "replication" {
-    count = var.s3_destination_arn != "" ? 1 : 0
-  name = "${local.resource}S3Replication-Role"
+  count = var.s3_destination_arn != "" ? 1 : 0
+  name  = "${local.resource}S3Replication-Role"
 
   assume_role_policy = <<POLICY
 {
@@ -20,8 +20,8 @@ POLICY
 }
 
 resource "aws_iam_policy" "replication" {
-    count = var.s3_destination_arn != "" ? 1 : 0
-  name = "${local.resource}S3Replication-Policy"
+  count = var.s3_destination_arn != "" ? 1 : 0
+  name  = "${local.resource}S3Replication-Policy"
 
   policy = <<POLICY
 {
@@ -64,8 +64,8 @@ POLICY
 
 
 resource "aws_iam_policy" "replication_with_kms" {
-    count = var.s3_destination_arn && var.kms_destination_arn != "" ? 1 : 0
-  name = "${local.resource}S3ReplicationWithKMS-Policy"
+  count = var.s3_destination_arn && var.kms_destination_arn != "" ? 1 : 0
+  name  = "${local.resource}S3ReplicationWithKMS-Policy"
 
   policy = <<POLICY
 {
@@ -91,13 +91,13 @@ POLICY
 
 
 resource "aws_iam_role_policy_attachment" "replication" {
-    count = var.s3_destination_arn != "" ? 1 : 0
+  count      = var.s3_destination_arn != "" ? 1 : 0
   role       = aws_iam_role.replication.name
   policy_arn = aws_iam_policy.replication.arn
 }
 
 resource "aws_iam_role_policy_attachment" "replication_with_kms" {
-  count = var.s3_destination_arn && var.kms_destination_arn != "" ? 1 : 0
+  count      = var.s3_destination_arn && var.kms_destination_arn != "" ? 1 : 0
   role       = aws_iam_role.replication.name
   policy_arn = aws_iam_policy.replication_with_kms.arn
 }

@@ -14,6 +14,6 @@ output "sfn_state_machine_arn" {
 }
 
 output "s3_replication_arn" {
-  value = aws_iam_role.replication.arn
+  value       = aws_iam_role.replication.arn
   description = "Role ARN for object replication"
 }
