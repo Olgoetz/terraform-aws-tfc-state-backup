@@ -80,3 +80,16 @@ variable "subnet_ids" {
   default     = []
 
 }
+
+variable "s3_destination_arn" {
+  type = string
+  default = ""
+  description = "S3 destination arn for object replication"
+}
+
+variable "kms_destination_arn" {
+  type = string
+  default = ""
+  description = "KMS key arn in for repilcation s3 destination"
+}
+

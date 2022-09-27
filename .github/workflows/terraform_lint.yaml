@@ -1,0 +1,16 @@
+name: terraform-lint
+
+on: [push, pull_request]
+permissions:
+  id-token: write
+  actions: write
+  contents: read # This is required for actions/checkout
+jobs:
+  tflint_job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Run Terraform Lint
+        uses: actionshub/terraform-lint@1.0.0
