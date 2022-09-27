@@ -1,10 +1,6 @@
 name: Terraform
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
+on: [push, pull_request]
 
 env:
   TF_WORKING_DIR: './examples'

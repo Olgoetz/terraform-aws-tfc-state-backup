@@ -18,7 +18,7 @@ The solution backups all Terraform Cloud's workspaces' states in case of an acce
 
 An example can be found in `./examples`.
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS --> 
 ## Requirements
 
 | Name | Version |
@@ -114,4 +114,5 @@ No modules.
 | <a name="output_s3_bucket"></a> [s3\_bucket](#output\_s3\_bucket) | Name of the S3 bucket for state backups |
 | <a name="output_sfn_state_machine_arn"></a> [sfn\_state\_machine\_arn](#output\_sfn\_state\_machine\_arn) | ARN of the sfn state machine |
 | <a name="output_sns_topic_arn"></a> [sns\_topic\_arn](#output\_sns\_topic\_arn) | ARN of the sns topic |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+
+<!-- BEGIN_TF_DOCS --> 
