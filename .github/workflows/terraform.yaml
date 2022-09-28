@@ -79,8 +79,11 @@ jobs:
 
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
-        run: exit 1
 
-    #   - name: Terraform Apply
-    #    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    #    run: terraform -chdir=./examples apply -auto-approve -input=false
+      - name: Terraform Apply
+        if: github.event_name == 'push'
+        run: terraform -chdir=./examples apply -auto-approve -input=false
+
+      - name: Terraform Destroy
+        if: github.event_name == 'push'
+        run: terraform -chdir=./examples destroy -auto-approve -input=false
