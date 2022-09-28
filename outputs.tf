@@ -12,3 +12,8 @@ output "sfn_state_machine_arn" {
   value       = aws_sfn_state_machine.state_machine.arn
   description = "ARN of the sfn state machine"
 }
+
+output "s3_replication_role_arn" {
+  value       = try(aws_iam_role.replication[0].arn, "")
+  description = "Role ARN for object replication"
+}

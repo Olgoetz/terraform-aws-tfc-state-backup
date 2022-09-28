@@ -241,17 +241,15 @@ resource "aws_iam_policy" "s3" {
   policy = data.aws_iam_policy_document.s3.json
 }
 
-resource "aws_iam_policy_attachment" "s3" {
-  name       = "${aws_iam_role.this.name}-s3-attachment"
-  roles      = [aws_iam_role.this.name]
+resource "aws_iam_role_policy_attachment" "s3" {
+  role       = aws_iam_role.this.name
   policy_arn = aws_iam_policy.s3.arn
 }
 
 # EC2 policy
-resource "aws_iam_policy_attachment" "ec2" {
+resource "aws_iam_role_policy_attachment" "ec2" {
   count      = var.create_lambda_vpc_config ? 1 : 0
-  name       = "${aws_iam_role.this.name}-ec2-attachment"
-  roles      = [aws_iam_role.this.name]
+  role       = aws_iam_role.this.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
@@ -273,10 +271,9 @@ resource "aws_iam_policy" "kms" {
   policy = data.aws_iam_policy_document.kms[0].json
 }
 
-resource "aws_iam_policy_attachment" "kms" {
+resource "aws_iam_role_policy_attachment" "kms" {
   count      = var.kms_key_alias != "" ? 1 : 0
-  name       = "${aws_iam_role.this.name}-kms-attachment"
-  roles      = [aws_iam_role.this.name]
+  role       = aws_iam_role.this.name
   policy_arn = aws_iam_policy.kms[0].arn
 }
 
@@ -295,16 +292,14 @@ resource "aws_iam_policy" "sns" {
   policy = data.aws_iam_policy_document.sns.json
 }
 
-resource "aws_iam_policy_attachment" "sns" {
-  name       = "${aws_iam_role.this.name}-sns-attachment"
-  roles      = [aws_iam_role.this.name]
+resource "aws_iam_role_policy_attachment" "sns" {
+  role       = aws_iam_role.this.name
   policy_arn = aws_iam_policy.sns.arn
 }
 
 
 # CloudWatch
-resource "aws_iam_policy_attachment" "cw" {
-  name       = "${aws_iam_role.this.name}-cw-attachment"
-  roles      = [aws_iam_role.this.name]
+resource "aws_iam_role_policy_attachment" "cw" {
+  role       = aws_iam_role.this.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
