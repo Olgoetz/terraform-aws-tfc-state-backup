@@ -44,12 +44,12 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        if: github.event_name == 'pull_request'
-        run: terraform -chdir=$TF_WORKING_DIR plan -no-color -input=false
+        if: github.event_name == 'push'
+        run: terraform -var tfc_token="" -chdir=$TF_WORKING_DIR plan -no-color -input=false
         continue-on-error: true
 
       - uses: actions/github-script@v6
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'push'
         env:
           PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
         with:
@@ -83,8 +83,8 @@ jobs:
 
       - name: Terraform Apply
         if: github.event_name == 'push'
-        run: terraform -chdir=./examples apply -auto-approve -input=false
+        run: terraform -chdir=./examples -var tfc_token="" apply -auto-approve -input=false
 
       - name: Terraform Destroy
         if: github.event_name == 'push'
-        run: terraform -chdir=./examples destroy -auto-approve -input=false
+        run: terraform -chdir=./examples -var tfc_token="" destroy -auto-approve -input=false
