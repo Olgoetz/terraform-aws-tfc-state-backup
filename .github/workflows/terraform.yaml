@@ -44,8 +44,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        if: github.event_name == 'push'
-        run: terraform -chdir=$TF_WORKING_DIR -var tfc_token="" plan -no-color -input=false
+        run: terraform -chdir=$TF_WORKING_DIR plan -var 'tfc_token=""' -no-color -input=false
         continue-on-error: true
 
       - uses: actions/github-script@v6
@@ -112,8 +111,8 @@ jobs:
 
       - name: Terraform Apply
         if: github.event_name == 'push'
-        run: terraform -chdir=./examples -var tfc_token="" apply -auto-approve -input=false
+        run: terraform -chdir=./examples apply -var 'tfc_token=""' -auto-approve -input=false
 
       - name: Terraform Destroy
         if: github.event_name == 'push'
-        run: terraform -chdir=./examples -var tfc_token="" destroy -auto-approve -input=false
+        run: terraform -chdir=./examples destry -var 'tfc_token=""' -auto-approve -input=false
