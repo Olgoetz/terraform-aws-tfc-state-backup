@@ -115,4 +115,4 @@ jobs:
 
       - name: Terraform Destroy
         if: github.event_name == 'push'
-        run: terraform -chdir=./examples destry -var 'tfc_token=""' -auto-approve -input=false
+        run: terraform -chdir=./examples destroy -var 'tfc_token=""' -auto-approve -input=false
