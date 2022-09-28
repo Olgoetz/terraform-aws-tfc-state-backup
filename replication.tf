@@ -92,12 +92,12 @@ POLICY
 
 resource "aws_iam_role_policy_attachment" "replication" {
   count      = var.s3_destination_arn != "" ? 1 : 0
-  role       = aws_iam_role.replication.name
-  policy_arn = aws_iam_policy.replication.arn
+  role       = aws_iam_role.replication[0].name
+  policy_arn = aws_iam_policy.replication[0].arn
 }
 
 resource "aws_iam_role_policy_attachment" "replication_with_kms" {
   count      = var.s3_destination_arn && var.kms_destination_arn != "" ? 1 : 0
-  role       = aws_iam_role.replication.name
-  policy_arn = aws_iam_policy.replication_with_kms.arn
+  role       = aws_iam_role.replication[0].name
+  policy_arn = aws_iam_policy.replication_with_kms[0].arn
 }
