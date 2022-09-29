@@ -101,3 +101,38 @@ resource "aws_iam_role_policy_attachment" "replication_with_kms" {
   role       = aws_iam_role.replication[0].name
   policy_arn = aws_iam_policy.replication_with_kms[0].arn
 }
+
+
+resource "aws_s3_bucket_replication_configuration" "replication" {
+  count = var.s3_destination_arn != "" ? 1 : 0
+
+  # Must have bucket versioning enabled first
+  depends_on = [aws_s3_bucket_versioning.this]
+
+  role   = aws_iam_role.replication[0].arn
+  bucket = aws_s3_bucket.this.id
+
+  rule {
+    id = "foobar"
+
+    filter {
+      prefix = ""
+    }
+
+    status = "Enabled"
+
+    destination {
+      bucket        = var.s3_destination_arn
+      storage_class = "STANDARD"
+      dynamic "encryption_configuration" {
+        for_each = try([var.kms_destination_arn], [])
+
+        content {
+          replica_kms_key_id = encryption_configuration.value
+
+        }
+      }
+    }
+
+  }
+}
