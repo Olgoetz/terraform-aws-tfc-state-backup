@@ -103,7 +103,6 @@ resource "aws_iam_role_policy_attachment" "replication_with_kms" {
 }
 
 
-
 resource "aws_s3_bucket_replication_configuration" "replication" {
   count = var.s3_destination_arn != "" ? 1 : 0
 
