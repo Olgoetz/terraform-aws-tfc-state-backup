@@ -134,5 +134,21 @@ resource "aws_s3_bucket_replication_configuration" "replication" {
       }
     }
 
+    dynamic "source_selection_criteria" {
+      for_each = try([var.kms_destination_arn], [])
+
+      content {
+
+        dynamic "sse_kms_encrypted_objects" {
+
+          for_each = try([var.kms_destination_arn], [])
+
+          content {
+
+            status = "Enabled"
+          }
+        }
+      }
+    }
   }
 }
