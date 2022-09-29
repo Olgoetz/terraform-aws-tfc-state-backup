@@ -121,6 +121,7 @@ resource "aws_s3_bucket_replication_configuration" "replication" {
 
     status = "Enabled"
 
+
     destination {
       bucket        = var.s3_destination_arn
       storage_class = "STANDARD"
@@ -131,6 +132,15 @@ resource "aws_s3_bucket_replication_configuration" "replication" {
           replica_kms_key_id = encryption_configuration.value
 
         }
+      }
+    }
+
+
+    dynamic "delete_marker_replication" {
+      for_each = try([var.kms_destination_arn], [])
+      content {
+
+        status = "Enabled"
       }
     }
 
@@ -150,5 +160,6 @@ resource "aws_s3_bucket_replication_configuration" "replication" {
         }
       }
     }
+
   }
 }
