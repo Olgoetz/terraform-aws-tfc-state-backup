@@ -114,7 +114,7 @@ resource "aws_s3_bucket_replication_configuration" "replication" {
   bucket = aws_s3_bucket.this.id
 
   rule {
-    id = "foobar"
+    id = "ReplicateAll"
 
     filter {
       prefix = ""
