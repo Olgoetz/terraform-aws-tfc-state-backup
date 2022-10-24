@@ -4,8 +4,8 @@
         "Get Organizations": {
             "Type": "Task",
             "Resource": "${get_organizations_lambda}",
-            "ResultPath": "$.org_ids",
-            "Next": "Backup Workspace State",
+            "ResultPath": "$",
+            "Next": "Prepare Organizations",
             "Retry": [ {
                 "ErrorEquals": [ "Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
                 "IntervalSeconds": 2,
@@ -13,20 +13,33 @@
                 "BackoffRate": 2
              } ],
              "Catch": [ {
-                "ErrorEquals": [ "TFCHTTPNotFound" , "TFCHTTPNotFound", "TFCHTTPBadRequest"],
+                "ErrorEquals": [ "TFCHTTPNotFound", "TFCHTTPBadRequest"],
                 "Next": "Error Handler Organizations",
                 "ResultPath": "$.result"
              } ]
         },
 
         "Error Handler Organizations": {
-            "Type": "Pass",
+            "Type": "Task",
             "ResultPath": "$",
+            "Resource": "${handle_error_lambda}",
             "Parameters": {
                 "Error.$": "States.StringToJson($.result.Cause)"
               },
             "End": true
          },
+        "Prepare Organizations": {
+            "Type": "Task",
+            "Resource": "${prepare_organizations_lambda}",
+            "ResultPath": "$.org_ids",
+            "Next": "Backup Workspace State",
+            "Retry": [ {
+                "ErrorEquals": [ "Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+             } ]
+        },
         "Backup Workspace State": {
             "Type": "Map",
             "ItemsPath": "$.org_ids",
@@ -34,13 +47,13 @@
             "MaxConcurrency": 5,
             "Next": "Send Report",
             "Iterator": {
-                "StartAt": "List Workspaces",
+                "StartAt": "Get Workspaces",
                 "States": {
-                    "List Workspaces": {
+                    "Get Workspaces": {
                         "Type": "Task",
-                        "Resource": "${list_workspaces_lambda}",
-                        "ResultPath":"$.ws",
-                        "Next": "Save State to S3",
+                        "Resource": "${get_workspaces_lambda}",
+                        "ResultPath":"$",
+                        "Next": "Prepare Workspaces",
                         "Retry": [ {
                             "ErrorEquals": [ "Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
                             "IntervalSeconds": 2,
@@ -48,23 +61,34 @@
                             "BackoffRate": 2
                          } ],
                          "Catch": [ {
-                            "ErrorEquals": [ "TFCHTTPNotFound" , "TFCHTTPNotFound", "TFCHTTPBadRequest"],
+                            "ErrorEquals": [ "TFCHTTPNotFound" , "TFCHTTPBadRequest"],
                             "Next": "Error Handler Workspaces",
                             "ResultPath": "$.result"
                          } ]
 
                     },
                     "Error Handler Workspaces": {
-                        "Type": "Pass",
+                        "Type": "Task",
                         "ResultPath": "$",
+                        "Resource": "${handle_error_lambda}",
                         "Parameters": {
-                            "org_id.$": "$.org_id",
-                            "ws.$": "$.ws",
                             "Error.$": "States.StringToJson($.result.Cause)"
                           },
                         "End": true
                      },
-                    "Save State to S3": {
+                    "Prepare Workspaces": {
+                        "Type": "Task",
+                        "Resource": "${prepare_workspaces_lambda}",
+                        "ResultPath":"$.ws",
+                        "Next": "Create Workspace State Backup",
+                        "Retry": [ {
+                            "ErrorEquals": [ "Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+                            "IntervalSeconds": 2,
+                            "MaxAttempts": 6,
+                            "BackoffRate": 2
+                         } ]
+                    },
+                    "Create Workspace State Backup": {
                         "Type": "Map",
                         "ItemsPath": "$.ws",
                         "Parameters": {
@@ -79,7 +103,7 @@
                             "States": {
                                 "Backup State": {
                                     "Type": "Task",
-                                    "Resource": "${backup_state_lambda}",
+                                    "Resource": "${create_workspace_state_backup_lambda}",
                                     "ResultPath": "$.result",
                                     "Retry": [ {
                                         "ErrorEquals": [ "Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
@@ -88,7 +112,7 @@
                                         "BackoffRate": 2
                                      } ],
                                     "Catch": [ {
-                                        "ErrorEquals": [ "TFCHTTPNotFound" , "TFCHTTPNotFound", "TFCHTTPBadRequest"],
+                                        "ErrorEquals": [ "TFCHTTPNotFound", "TFCHTTPBadRequest"],
                                         "Next": "Error Handler Backup",
                                         "ResultPath": "$.result"
                                      } ],
@@ -97,11 +121,10 @@
                             
                                 },
                                 "Error Handler Backup": {
-                                    "Type": "Pass",
+                                    "Type": "Task",
                                     "ResultPath": "$",
+                                    "Resource": "${handle_error_lambda}",
                                     "Parameters": {
-                                        "org_id.$": "$.org_id",
-                                        "ws.$": "$.ws",
                                         "Error.$": "States.StringToJson($.result.Cause)"
                                       },
                                     "End": true

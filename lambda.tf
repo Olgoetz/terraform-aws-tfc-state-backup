@@ -48,21 +48,21 @@ resource "aws_security_group" "lambda" {
 # ---------------------------------------------------
 
 
-# sources/organizations.py
+# sources/get_organizations.py
 
-data "archive_file" "organizations" {
+data "archive_file" "get_organizations" {
   type        = "zip"
-  source_file = "${path.module}/lambdas/organizations.py"
-  output_path = "${path.module}/organizations.zip"
+  source_file = "${path.module}/lambdas/get_organizations.py"
+  output_path = "${path.module}/get_organizations.zip"
 }
 
-resource "aws_lambda_function" "organizations" {
-  filename         = data.archive_file.organizations.output_path
-  function_name    = "${local.resource_prefix}organizations-Lambda-Function"
+resource "aws_lambda_function" "get_organizations" {
+  filename         = data.archive_file.get_organizations.output_path
+  function_name    = "${local.resource_prefix}get-organizations-Lambda-Function"
   role             = aws_iam_role.this.arn
-  handler          = "organizations.handler"
-  description      = "Returns all Terraform Cloud organizations."
-  source_code_hash = data.archive_file.organizations.output_base64sha256
+  handler          = "get_organizations.handler"
+  description      = "Returns all Terraform Cloud organizations and saves them in an s3 bucket."
+  source_code_hash = data.archive_file.get_organizations.output_base64sha256
   timeout          = "20"
   runtime          = "python3.9"
   layers           = [aws_lambda_layer_version.lambda_layer.arn]
@@ -78,29 +78,69 @@ resource "aws_lambda_function" "organizations" {
   }
   environment {
     variables = {
-      TFC_URL    = var.tfc_url
-      TFC_TOKEN  = var.tfc_token
-      SSL_VERIFY = var.tfc_ssl_verify
+      TFC_URL     = var.tfc_url
+      TFC_TOKEN   = var.tfc_token
+      SSL_VERIFY  = var.tfc_ssl_verify
+      TEMP_BUCKET = aws_s3_bucket.temp.bucket
     }
   }
 }
 
-# sources/workspaces.py
 
-data "archive_file" "workspaces" {
+# sources/prepare_organizations.py
+
+data "archive_file" "prepare_organizations" {
   type        = "zip"
-  source_file = "${path.module}/lambdas/workspaces.py"
-  output_path = "${path.module}/workspaces.zip"
+  source_file = "${path.module}/lambdas/prepare_organizations.py"
+  output_path = "${path.module}/prepare_organizations.zip"
+}
+
+resource "aws_lambda_function" "prepare_organizations" {
+  filename         = data.archive_file.prepare_organizations.output_path
+  function_name    = "${local.resource_prefix}preapre-organizations-Lambda-Function"
+  role             = aws_iam_role.this.arn
+  handler          = "prepare_organizations.handler"
+  description      = "Provides a list org ids."
+  source_code_hash = data.archive_file.prepare_organizations.output_base64sha256
+  timeout          = "20"
+  runtime          = "python3.9"
+  layers           = [aws_lambda_layer_version.lambda_layer.arn]
+
+  # dynamic "vpc_config" {
+  #   for_each = var.create_lambda_vpc_config ? [1] : []
+
+  #   content {
+
+  #     subnet_ids         = var.subnet_ids
+  #     security_group_ids = [aws_security_group.lambda[0].id]
+  #   }
+  # }
+  environment {
+    variables = {
+      TFC_URL     = var.tfc_url
+      TFC_TOKEN   = var.tfc_token
+      SSL_VERIFY  = var.tfc_ssl_verify
+      TEMP_BUCKET = aws_s3_bucket.temp.bucket
+    }
+  }
+}
+
+# sources/get_workspaces.py
+
+data "archive_file" "get_workspaces" {
+  type        = "zip"
+  source_file = "${path.module}/lambdas/get_workspaces.py"
+  output_path = "${path.module}/get_workspaces.zip"
 
 }
 
-resource "aws_lambda_function" "workspaces" {
-  filename         = data.archive_file.workspaces.output_path
-  function_name    = "${local.resource_prefix}workspaces-Lambda-Function"
+resource "aws_lambda_function" "get_workspaces" {
+  filename         = data.archive_file.get_workspaces.output_path
+  function_name    = "${local.resource_prefix}get-workspaces-Lambda-Function"
   role             = aws_iam_role.this.arn
-  handler          = "workspaces.handler"
-  description      = "Returns all workspaces of a Terraform Cloud organization."
-  source_code_hash = data.archive_file.workspaces.output_base64sha256
+  handler          = "get_workspaces.handler"
+  description      = "Returns all workspaces of a Terraform Cloud organization and saves them to s3."
+  source_code_hash = data.archive_file.get_workspaces.output_base64sha256
   timeout          = "20"
   runtime          = "python3.9"
   layers           = [aws_lambda_layer_version.lambda_layer.arn]
@@ -117,29 +157,70 @@ resource "aws_lambda_function" "workspaces" {
 
   environment {
     variables = {
-      TFC_URL    = var.tfc_url
-      TFC_TOKEN  = var.tfc_token
-      SSL_VERIFY = var.tfc_ssl_verify
+      TFC_URL     = var.tfc_url
+      TFC_TOKEN   = var.tfc_token
+      SSL_VERIFY  = var.tfc_ssl_verify
+      TEMP_BUCKET = aws_s3_bucket.temp.bucket
     }
   }
 }
 
-# sources/stateBackup.py
+# sources/prepare_workspaces.py
 
-data "archive_file" "statebackup" {
+data "archive_file" "prepare_workspaces" {
   type        = "zip"
-  source_file = "${path.module}/lambdas/stateBackup.py"
-  output_path = "${path.module}/stateBackup.zip"
+  source_file = "${path.module}/lambdas/prepare_workspaces.py"
+  output_path = "${path.module}/prepare_workspaces.zip"
 
 }
 
-resource "aws_lambda_function" "statebackup" {
-  filename         = data.archive_file.statebackup.output_path
-  function_name    = "${local.resource_prefix}statebackup-Lambda-Function"
+resource "aws_lambda_function" "prepare_workspaces" {
+  filename         = data.archive_file.prepare_workspaces.output_path
+  function_name    = "${local.resource_prefix}prepare-workspaces-Lambda-Function"
   role             = aws_iam_role.this.arn
-  handler          = "stateBackup.handler"
+  handler          = "prepare_workspaces.handler"
+  description      = "Prepares a list of workspaces for a specific orga."
+  source_code_hash = data.archive_file.prepare_workspaces.output_base64sha256
+  timeout          = "20"
+  runtime          = "python3.9"
+  layers           = [aws_lambda_layer_version.lambda_layer.arn]
+
+  # dynamic "vpc_config" {
+  #   for_each = var.create_lambda_vpc_config ? [1] : []
+
+  #   content {
+
+  #     subnet_ids         = var.subnet_ids
+  #     security_group_ids = [aws_security_group.lambda[0].id]
+  #   }
+  # }
+
+  environment {
+    variables = {
+      TFC_URL     = var.tfc_url
+      TFC_TOKEN   = var.tfc_token
+      SSL_VERIFY  = var.tfc_ssl_verify
+      TEMP_BUCKET = aws_s3_bucket.temp.bucket
+    }
+  }
+}
+
+# sources/create_workspace_state_backup.py
+
+data "archive_file" "create_workspace_state_backup" {
+  type        = "zip"
+  source_file = "${path.module}/lambdas/create_workspace_state_backup.py"
+  output_path = "${path.module}/create_workspace_state_backup.zip"
+
+}
+
+resource "aws_lambda_function" "create_workspace_state_backup" {
+  filename         = data.archive_file.create_workspace_state_backup.output_path
+  function_name    = "${local.resource_prefix}create_workspace_state_backup-Lambda-Function"
+  role             = aws_iam_role.this.arn
+  handler          = "create_workspace_state_backup.handler"
   description      = "Uploads the current state version of a Terraform workspace to s3."
-  source_code_hash = data.archive_file.statebackup.output_base64sha256
+  source_code_hash = data.archive_file.create_workspace_state_backup.output_base64sha256
   timeout          = "20"
   runtime          = "python3.9"
   layers           = [aws_lambda_layer_version.lambda_layer.arn]
@@ -155,31 +236,32 @@ resource "aws_lambda_function" "statebackup" {
   }
   environment {
     variables = {
-      TFC_URL    = var.tfc_url
-      TFC_TOKEN  = var.tfc_token
-      S3_BUCKET  = aws_s3_bucket.this.bucket
-      SSL_VERIFY = var.tfc_ssl_verify
+      TFC_URL     = var.tfc_url
+      TFC_TOKEN   = var.tfc_token
+      S3_BUCKET   = aws_s3_bucket.this.bucket
+      SSL_VERIFY  = var.tfc_ssl_verify
+      TEMP_BUCKET = aws_s3_bucket.temp.bucket
     }
   }
 }
 
 
-# sources/sendReport.py
+# sources/send_report.py
 
-data "archive_file" "sendreport" {
+data "archive_file" "send_report" {
   type        = "zip"
-  source_file = "${path.module}/lambdas/sendReport.py"
-  output_path = "${path.module}/sendReport.zip"
+  source_file = "${path.module}/lambdas/send_report.py"
+  output_path = "${path.module}/send_report.zip"
 
 }
 
-resource "aws_lambda_function" "sendreport" {
-  filename         = data.archive_file.sendreport.output_path
-  function_name    = "${local.resource_prefix}sendreport-Lambda-Function"
+resource "aws_lambda_function" "send_report" {
+  filename         = data.archive_file.send_report.output_path
+  function_name    = "${local.resource_prefix}send_report-Lambda-Function"
   role             = aws_iam_role.this.arn
-  handler          = "sendReport.handler"
+  handler          = "send_report.handler"
   description      = "Sends a notification to the provided SNS topic."
-  source_code_hash = data.archive_file.sendreport.output_base64sha256
+  source_code_hash = data.archive_file.send_report.output_base64sha256
   timeout          = "20"
   runtime          = "python3.9"
   layers           = [aws_lambda_layer_version.lambda_layer.arn]
@@ -187,18 +269,53 @@ resource "aws_lambda_function" "sendreport" {
   environment {
     variables = {
       SNS_TOPIC_ARN = aws_sns_topic.report.arn
+      TEMP_BUCKET   = aws_s3_bucket.temp.bucket
     }
   }
 }
+
+# sources/handle_error.py
+
+data "archive_file" "handle_error" {
+  type        = "zip"
+  source_file = "${path.module}/lambdas/handle_error.py"
+  output_path = "${path.module}/handle_error.zip"
+
+}
+
+resource "aws_lambda_function" "handle_error" {
+  filename         = data.archive_file.handle_error.output_path
+  function_name    = "${local.resource_prefix}handle_error-Lambda-Function"
+  role             = aws_iam_role.this.arn
+  handler          = "handle_error.handler"
+  description      = "Sends a notification to the provided SNS topic."
+  source_code_hash = data.archive_file.handle_error.output_base64sha256
+  timeout          = "20"
+  runtime          = "python3.9"
+  layers           = [aws_lambda_layer_version.lambda_layer.arn]
+
+  environment {
+    variables = {
+      SNS_TOPIC_ARN = aws_sns_topic.report.arn
+      TEMP_BUCKET   = aws_s3_bucket.temp.bucket
+    }
+  }
+}
+
 
 # CloudWatch
 # ---------------------------------------------------
 
 resource "aws_cloudwatch_log_group" "this" {
-  for_each = toset([aws_lambda_function.organizations.function_name,
-    aws_lambda_function.workspaces.function_name,
-    aws_lambda_function.statebackup.function_name,
-  aws_lambda_function.sendreport.function_name])
+  for_each = toset([
+    aws_lambda_function.get_organizations.function_name,
+    aws_lambda_function.prepare_organizations.function_name,
+    aws_lambda_function.get_workspaces.function_name,
+    aws_lambda_function.prepare_workspaces.function_name,
+    aws_lambda_function.create_workspace_state_backup.function_name,
+    aws_lambda_function.send_report.function_name,
+    aws_lambda_function.handle_error.function_name
+  ])
   name              = "/aws/lambda/${each.value}"
   retention_in_days = 30
 }
@@ -229,9 +346,9 @@ EOF
 # S3 Policy
 data "aws_iam_policy_document" "s3" {
   statement {
-    sid       = "UploadToS3"
+    sid       = "S3"
     effect    = "Allow"
-    actions   = ["s3:PutObject"]
+    actions   = ["s3:PutObject", "s3:List*", "s3:GetObject*"]
     resources = [aws_s3_bucket.this.arn, "${aws_s3_bucket.this.arn}/*"]
   }
 }

@@ -7,10 +7,13 @@ resource "aws_sfn_state_machine" "state_machine" {
   role_arn = aws_iam_role.step_functions_role.arn
 
   definition = templatefile("${path.module}/state_machine.json", {
-    get_organizations_lambda = aws_lambda_function.organizations.arn,
-    list_workspaces_lambda   = aws_lambda_function.workspaces.arn,
-    backup_state_lambda      = aws_lambda_function.statebackup.arn
-    send_report_lambda       = aws_lambda_function.sendreport.arn
+    get_organizations_lambda             = aws_lambda_function.get_organizations.arn,
+    prepare_organizations_lambda         = aws_lambda_function.prepare_organizations.arn,
+    get_workspaces_lambda                = aws_lambda_function.get_workspaces.arn,
+    prepare_workspaces_lambda            = aws_lambda_function.prepare_workspaces.arn,
+    create_workspace_state_backup_lambda = aws_lambda_function.create_workspace_state_backup.arn,
+    send_report_lambda                   = aws_lambda_function.send_report.arn,
+    handle_error_lambda                  = aws_lambda_function.handle_error.arn
   })
 }
 
@@ -44,10 +47,15 @@ data "aws_iam_policy_document" "step_functions_policy" {
 
     effect  = "Allow"
     actions = ["lambda:InvokeFunction"]
-    resources = [aws_lambda_function.organizations.arn,
-      aws_lambda_function.workspaces.arn,
-      aws_lambda_function.statebackup.arn,
-    aws_lambda_function.sendreport.arn]
+    resources = [
+      aws_lambda_function.get_organizations.arn,
+      aws_lambda_function.prepare_organizations.arn,
+      aws_lambda_function.get_workspaces.arn,
+      aws_lambda_function.prepare_workspaces.arn,
+      aws_lambda_function.create_workspace_state_backup.arn,
+      aws_lambda_function.send_report.arn,
+      aws_lambda_function.handle_error.arn
+    ]
   }
 
   statement {

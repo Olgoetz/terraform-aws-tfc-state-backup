@@ -2,11 +2,13 @@ import os
 import json
 import logging
 from terrasnek.api import TFC
+from helpers import functions
 
 # Environment variables
 TFC_TOKEN = os.getenv("TFC_TOKEN", None)
 TFC_URL = os.getenv("TFC_URL", "https://app.terraform.io")
 SSL_VERIFY = os.getenv("SSL_VERIFY", False)
+TEMP_BUCKET=os.getenv("TEMP_BUCKET", None)
 
 if SSL_VERIFY == 'false' or SSL_VERIFY is False:
     ssl_verify = False
@@ -22,25 +24,25 @@ logger.setLevel(logging.INFO)
 
 
 def handler(event, context):
-    """Gets the current state of a Terraform Cloud workspace and safes it to an s3 bucket
+    """Gets all workspaces from Terraform Cloud
 
         :param event: Incoming event object from AWS
         :param context: Context object from AWS
-        :return: Success message
+        :return: Bucket name and object key containing the workspace
     """
 
     print(json.dumps(event))
     logger.info(f"TFC_URL: {TFC_URL}")
 
-    # Configure api
-    tfc_org = event["org_id"]
-    api.set_org(tfc_org)
+    key = event["key"]
+    bucket = event["bucket"]
 
-    # Get workspace ids
-    workspaces = api.workspaces.list_all()["data"]
-    workspace_ids = [
-        {"ws_id": ws["id"], "ws_name": ws["attributes"]["name"]} for ws in workspaces]
+    to_load_filename= "/tmp/org_list.json"
+    
+    # Download data from s3
+    functions.download_file(key, to_load_filename, bucket)
 
-    logger.info(workspace_ids)
+    org_ids = functions.load_json(to_load_filename)
 
-    return workspace_ids
+    return org_ids
+
