@@ -91,8 +91,6 @@ resource "aws_s3_bucket_policy" "this" {
 }
 
 
-
-
 ################ TEMPS3 ################
 # Bucket that functions as temporary storage for step functions payloads
 #################################################

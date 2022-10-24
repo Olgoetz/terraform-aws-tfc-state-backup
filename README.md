@@ -18,6 +18,7 @@ The solution backups all Terraform Cloud's workspaces' states in case of an acce
 
 An example can be found in `./examples`.
 
+
 <!-- BEGIN_TF_DOCS --> 
 
 <!-- END_TF_DOCS --> 

@@ -65,6 +65,7 @@ POLICY
 
 
 resource "aws_iam_policy" "replication_with_kms" {
+
   count = var.s3_destination_arn != "" && (var.kms_destination_arn != "" || var.kms_key_alias != "") ? 1 : 0
   name  = "${local.resource_prefix}S3ReplicationWithKMS-Policy"
 
@@ -101,8 +102,6 @@ resource "aws_iam_role_policy_attachment" "replication_with_kms" {
   policy_arn = aws_iam_policy.replication_with_kms[0].arn
 }
 
-
-
 resource "aws_s3_bucket_replication_configuration" "replication" {
   count = var.s3_destination_arn != "" ? 1 : 0
 
@@ -115,13 +114,12 @@ resource "aws_s3_bucket_replication_configuration" "replication" {
   rule {
     id = "ReplicateAll"
 
+
     filter {
       prefix = ""
     }
 
     status = "Enabled"
-
-
 
     destination {
       bucket        = var.s3_destination_arn
@@ -160,7 +158,5 @@ resource "aws_s3_bucket_replication_configuration" "replication" {
         }
       }
     }
-
-
   }
 }
