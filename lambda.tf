@@ -18,12 +18,12 @@ resource "aws_lambda_layer_version" "lambda_layer" {
 # ---------------------------------------------------
 
 data "aws_vpc" "this" {
-  count = var.create_lambda_vpc_config ? 1 : 0
+  count = length(var.subnet_ids) != 0 ? 1 : 0
   id    = var.vpc_id
 }
 
 resource "aws_security_group" "lambda" {
-  count       = var.create_lambda_vpc_config ? 1 : 0
+  count       = length(var.subnet_ids) != 0 ? 1 : 0
   name        = "${local.resource_prefix}SG-Lambda"
   description = "Allow TLS inbound traffic"
   vpc_id      = data.aws_vpc.this[0].id
@@ -68,7 +68,7 @@ resource "aws_lambda_function" "get_organizations" {
   layers           = [aws_lambda_layer_version.lambda_layer.arn]
 
   dynamic "vpc_config" {
-    for_each = var.create_lambda_vpc_config ? [1] : []
+    for_each = length(var.subnet_ids) != 0 ? [1] : []
 
     content {
 
@@ -107,7 +107,7 @@ resource "aws_lambda_function" "prepare_organizations" {
   layers           = [aws_lambda_layer_version.lambda_layer.arn]
 
   # dynamic "vpc_config" {
-  #   for_each = var.create_lambda_vpc_config ? [1] : []
+  #   for_each = length(var.subnet_ids) != 0 ? [1] : []
 
   #   content {
 
@@ -146,7 +146,7 @@ resource "aws_lambda_function" "get_workspaces" {
   layers           = [aws_lambda_layer_version.lambda_layer.arn]
 
   dynamic "vpc_config" {
-    for_each = var.create_lambda_vpc_config ? [1] : []
+    for_each = length(var.subnet_ids) != 0 ? [1] : []
 
     content {
 
@@ -186,7 +186,7 @@ resource "aws_lambda_function" "prepare_workspaces" {
   layers           = [aws_lambda_layer_version.lambda_layer.arn]
 
   # dynamic "vpc_config" {
-  #   for_each = var.create_lambda_vpc_config ? [1] : []
+  #   for_each = length(var.subnet_ids) != 0 ? [1] : []
 
   #   content {
 
@@ -226,7 +226,7 @@ resource "aws_lambda_function" "create_workspace_state_backup" {
   layers           = [aws_lambda_layer_version.lambda_layer.arn]
 
   dynamic "vpc_config" {
-    for_each = var.create_lambda_vpc_config ? [1] : []
+    for_each = length(var.subnet_ids) != 0 ? [1] : []
 
     content {
 
@@ -365,7 +365,7 @@ resource "aws_iam_role_policy_attachment" "s3" {
 
 # EC2 policy
 resource "aws_iam_role_policy_attachment" "ec2" {
-  count      = var.create_lambda_vpc_config ? 1 : 0
+  count      = length(var.subnet_ids) != 0 ? 1 : 0
   role       = aws_iam_role.this.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }

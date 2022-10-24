@@ -62,12 +62,6 @@ variable "cw_cron_expression" {
   default     = "cron(0 23 * * ? *)"
 }
 
-variable "create_lambda_vpc_config" {
-  type        = bool
-  description = "Create VPC config for 'organizations', 'workspaces' and 'statebackup' lambda"
-  default     = false
-}
-
 variable "vpc_id" {
   type        = string
   description = "VPC id if creating vpc config for lambdas"
