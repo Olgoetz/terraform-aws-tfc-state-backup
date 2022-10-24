@@ -40,7 +40,7 @@ resource "aws_iam_policy" "replication" {
       "Effect": "Allow",
       "Resource": [
         "${aws_s3_bucket.this.arn}",
-        "${aws_s3_bucket.this.arn}/*"
+        "${aws_s3_bucket.this.arn}/*",
         "${var.s3_destination_arn}",
         "${var.s3_destination_arn}/*"
       ]

@@ -58,7 +58,7 @@ data "archive_file" "get_organizations" {
 
 resource "aws_lambda_function" "get_organizations" {
   filename         = data.archive_file.get_organizations.output_path
-  function_name    = "${local.resource_prefix}get-organizations-Lambda-Function"
+  function_name    = "${local.resource_prefix}get-organizations"
   role             = aws_iam_role.this.arn
   handler          = "get_organizations.handler"
   description      = "Returns all Terraform Cloud organizations and saves them in an s3 bucket."
@@ -97,7 +97,7 @@ data "archive_file" "prepare_organizations" {
 
 resource "aws_lambda_function" "prepare_organizations" {
   filename         = data.archive_file.prepare_organizations.output_path
-  function_name    = "${local.resource_prefix}preapre-organizations-Lambda-Function"
+  function_name    = "${local.resource_prefix}preapre-organizations"
   role             = aws_iam_role.this.arn
   handler          = "prepare_organizations.handler"
   description      = "Provides a list org ids."
@@ -136,7 +136,7 @@ data "archive_file" "get_workspaces" {
 
 resource "aws_lambda_function" "get_workspaces" {
   filename         = data.archive_file.get_workspaces.output_path
-  function_name    = "${local.resource_prefix}get-workspaces-Lambda-Function"
+  function_name    = "${local.resource_prefix}get-workspaces"
   role             = aws_iam_role.this.arn
   handler          = "get_workspaces.handler"
   description      = "Returns all workspaces of a Terraform Cloud organization and saves them to s3."
@@ -176,7 +176,7 @@ data "archive_file" "prepare_workspaces" {
 
 resource "aws_lambda_function" "prepare_workspaces" {
   filename         = data.archive_file.prepare_workspaces.output_path
-  function_name    = "${local.resource_prefix}prepare-workspaces-Lambda-Function"
+  function_name    = "${local.resource_prefix}prepare-workspaces"
   role             = aws_iam_role.this.arn
   handler          = "prepare_workspaces.handler"
   description      = "Prepares a list of workspaces for a specific orga."
@@ -216,7 +216,7 @@ data "archive_file" "create_workspace_state_backup" {
 
 resource "aws_lambda_function" "create_workspace_state_backup" {
   filename         = data.archive_file.create_workspace_state_backup.output_path
-  function_name    = "${local.resource_prefix}create_workspace_state_backup-Lambda-Function"
+  function_name    = "${local.resource_prefix}create_workspace_state_backup"
   role             = aws_iam_role.this.arn
   handler          = "create_workspace_state_backup.handler"
   description      = "Uploads the current state version of a Terraform workspace to s3."
@@ -257,7 +257,7 @@ data "archive_file" "send_report" {
 
 resource "aws_lambda_function" "send_report" {
   filename         = data.archive_file.send_report.output_path
-  function_name    = "${local.resource_prefix}send_report-Lambda-Function"
+  function_name    = "${local.resource_prefix}send_report"
   role             = aws_iam_role.this.arn
   handler          = "send_report.handler"
   description      = "Sends a notification to the provided SNS topic."
@@ -285,7 +285,7 @@ data "archive_file" "handle_error" {
 
 resource "aws_lambda_function" "handle_error" {
   filename         = data.archive_file.handle_error.output_path
-  function_name    = "${local.resource_prefix}handle_error-Lambda-Function"
+  function_name    = "${local.resource_prefix}handle_error"
   role             = aws_iam_role.this.arn
   handler          = "handle_error.handler"
   description      = "Sends a notification to the provided SNS topic."

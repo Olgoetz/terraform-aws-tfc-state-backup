@@ -167,8 +167,8 @@ resource "aws_s3_bucket_policy" "temp" {
         Action = "s3:*",
         Effect = "Deny",
         Resource = [
-          aws_s3_bucket.this.arn,
-          "${aws_s3_bucket.this.arn}/*"
+          aws_s3_bucket.temp.arn,
+          "${aws_s3_bucket.temp.arn}/*"
         ]
         Condition = {
           Bool = {
