@@ -29,33 +29,34 @@ resource "aws_iam_policy" "replication" {
   "Statement": [
     {
       "Action": [
-        "s3:GetReplicationConfiguration",
-        "s3:ListBucket"
+          "s3:ListBucket",
+          "s3:GetReplicationConfiguration",
+          "s3:GetObjectVersionForReplication",
+          "s3:GetObjectVersionAcl",
+          "s3:GetObjectVersionTagging",
+          "s3:GetObjectRetention",
+          "s3:GetObjectLegalHold"
       ],
       "Effect": "Allow",
       "Resource": [
-        "${aws_s3_bucket.this.arn}"
-      ]
-    },
-    {
-      "Action": [
-        "s3:GetObjectVersionForReplication",
-        "s3:GetObjectVersionAcl",
-         "s3:GetObjectVersionTagging"
-      ],
-      "Effect": "Allow",
-      "Resource": [
+        "${aws_s3_bucket.this.arn}",
         "${aws_s3_bucket.this.arn}/*"
+        "${var.s3_destination_arn}",
+        "${var.s3_destination_arn}/*"
       ]
     },
     {
       "Action": [
-        "s3:ReplicateObject",
-        "s3:ReplicateDelete",
-        "s3:ReplicateTags"
+          "s3:ReplicateObject",
+          "s3:ReplicateDelete",
+          "s3:ReplicateTags",
+          "s3:ObjectOwnerOverrideToBucketOwner"
       ],
       "Effect": "Allow",
-      "Resource": "${var.s3_destination_arn}/*"
+      "Resource": [
+        "${aws_s3_bucket.this.arn}/*",
+        "${var.s3_destination_arn}/*"
+      ]
     }
   ]
 }
@@ -64,7 +65,8 @@ POLICY
 
 
 resource "aws_iam_policy" "replication_with_kms" {
-  count = var.s3_destination_arn != "" && var.kms_destination_arn != "" ? 1 : 0
+
+  count = var.s3_destination_arn != "" && (var.kms_destination_arn != "" || var.kms_key_alias != "") ? 1 : 0
   name  = "${local.resource_prefix}S3ReplicationWithKMS-Policy"
 
   policy = <<POLICY
@@ -80,9 +82,7 @@ resource "aws_iam_policy" "replication_with_kms" {
             "kms:DescribeKey"
       ],
       "Effect": "Allow",
-      "Resource": [
-        "${var.kms_destination_arn}"
-      ]
+      "Resource": "*"
     }
   ]
 }
@@ -97,11 +97,10 @@ resource "aws_iam_role_policy_attachment" "replication" {
 }
 
 resource "aws_iam_role_policy_attachment" "replication_with_kms" {
-  count      = var.s3_destination_arn != "" && var.kms_destination_arn != "" ? 1 : 0
+  count      = var.s3_destination_arn != "" && (var.kms_destination_arn != "" || var.kms_key_alias != "") ? 1 : 0
   role       = aws_iam_role.replication[0].name
   policy_arn = aws_iam_policy.replication_with_kms[0].arn
 }
-
 
 resource "aws_s3_bucket_replication_configuration" "replication" {
   count = var.s3_destination_arn != "" ? 1 : 0
@@ -113,14 +112,14 @@ resource "aws_s3_bucket_replication_configuration" "replication" {
   bucket = aws_s3_bucket.this.id
 
   rule {
-    id = "foobar"
+    id = "ReplicateAll"
+
 
     filter {
       prefix = ""
     }
 
     status = "Enabled"
-
 
     destination {
       bucket        = var.s3_destination_arn
@@ -134,7 +133,6 @@ resource "aws_s3_bucket_replication_configuration" "replication" {
         }
       }
     }
-
 
     dynamic "delete_marker_replication" {
       for_each = try([var.kms_destination_arn], [])
@@ -160,6 +158,5 @@ resource "aws_s3_bucket_replication_configuration" "replication" {
         }
       }
     }
-
   }
 }

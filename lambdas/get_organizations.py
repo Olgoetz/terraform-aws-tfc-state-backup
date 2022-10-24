@@ -9,12 +9,14 @@ from botocore.exceptions import ClientError
 from terrasnek.api import TFC
 from datetime import datetime
 from time import time
+from helpers import functions
 
 
 # Environment variables
 TFC_TOKEN = os.getenv("TFC_TOKEN", None)
 TFC_URL = os.getenv("TFC_URL", "https://app.terraform.io")
 SSL_VERIFY = os.getenv("SSL_VERIFY", False)
+TEMP_BUCKET=os.getenv("TEMP_BUCKET", None)
 
 if SSL_VERIFY == 'false' or SSL_VERIFY is False:
     ssl_verify = False
@@ -42,4 +44,11 @@ def handler(event, context):
 
     result = [{"org_id": org["id"]} for org in orgs["data"]]
     logger.info(result)
-    return result
+    file_name = "/tmp/org_list.json"
+    object_name = "/orgas/org_list.json"
+    functions.save_json(file_name, result)
+    functions.upload_file(file_name, TEMP_BUCKET, object_name)
+    return {
+        "key": object_name,
+        "bucket": f"arn:aws:s3:::{TEMP_BUCKET}"
+        }
