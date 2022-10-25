@@ -116,7 +116,7 @@
                                 },
                                 "Error Handler Backup": {
                                     "Type": "Task",
-                                    "ResultPath": "$",
+                                    "ResultPath": "$.result",
                                     "Resource": "${handle_error_lambda}",
                                     "End": true
                                  }

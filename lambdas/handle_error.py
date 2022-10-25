@@ -27,6 +27,7 @@ def handler(event, context):
 
     tfc_org = event["org_id"]
     ws_name = event['ws']['ws_name']
+    ws_id = event['ws']['ws_id']
 
     file_name = f'/tmp/{tfc_org}_{ws_name}.json'
     object_name = f'failed/{tfc_org}_{ws_name}.json'
@@ -37,8 +38,6 @@ def handler(event, context):
 
     
     msg = {
-        "org_id": tfc_org,
-        "ws_name": ws_name,
         "message": "Failed to download workspace state."
     }
     return msg

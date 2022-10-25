@@ -89,7 +89,7 @@ def handler(event, context):
     functions.save_json("/tmp/msg.json", msg)
     functions.upload_file("/tmp/msg.json", TEMP_BUCKET, file_name_temp)
     
-    return json.dumps(msg)
+    return msg
 
 
 #handler({"org_id": "Oliver", "ws_id": 'ws-xGsTy18ggUmNQ2cB'}, {})

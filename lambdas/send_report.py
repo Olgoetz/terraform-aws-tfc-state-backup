@@ -35,7 +35,7 @@ def handler(event, context):
     )
 
     logger.info("Init response for successful state backups:")
-    logger.info(json.loads(successful_init_response))
+    logger.info(successful_init_response)
 
     successful = successful + successful_init_response['Contents']
 
@@ -55,6 +55,9 @@ def handler(event, context):
 
     
     ## FAILED BACKUPS
+    
+    logger.info("Init response for failed state backups:")
+    logger.info(failed_init_response)
     failed = []
     # Init call
     failed_init_response = s3_client.list_objects_v2(
@@ -85,7 +88,8 @@ def handler(event, context):
     
 {len(failed)} state backups failed:  More information can be found in the logs.
     
-For instance you can fire the following in cloudwatch insights for /aws/lambda/TerraformStateBackup-create_workspace_state_backup:
+For instance you can fire the following command in cloudwatch insights for /aws/lambda/TerraformStateBackup-create_workspace_state_backup:
+
     fields @timestamp, @message
     | sort @timestamp desc
     | filter @message like "[ERROR]"
