@@ -13,7 +13,7 @@
                 "BackoffRate": 2
              } ],
              "Catch": [ {
-                "ErrorEquals": [ "TFCHTTPNotFound", "TFCHTTPBadRequest"],
+                "ErrorEquals": [ "TFCCustomError", "TFCHTTPBadRequest"],
                 "Next": "Error Handler Organizations",
                 "ResultPath": "$.result"
              } ]
@@ -23,10 +23,7 @@
             "Type": "Task",
             "ResultPath": "$",
             "Resource": "${handle_error_lambda}",
-            "Parameters": {
-                "Error.$": "States.StringToJson($.result.Cause)"
-              },
-            "End": true
+            "Next": "Finished"
          },
         "Prepare Organizations": {
             "Type": "Task",
@@ -61,7 +58,7 @@
                             "BackoffRate": 2
                          } ],
                          "Catch": [ {
-                            "ErrorEquals": [ "TFCHTTPNotFound" , "TFCHTTPBadRequest"],
+                            "ErrorEquals": [ "TFCCustomError" , "TFCHTTPBadRequest"],
                             "Next": "Error Handler Workspaces",
                             "ResultPath": "$.result"
                          } ]
@@ -71,9 +68,6 @@
                         "Type": "Task",
                         "ResultPath": "$",
                         "Resource": "${handle_error_lambda}",
-                        "Parameters": {
-                            "Error.$": "States.StringToJson($.result.Cause)"
-                          },
                         "End": true
                      },
                     "Prepare Workspaces": {
@@ -112,7 +106,7 @@
                                         "BackoffRate": 2
                                      } ],
                                     "Catch": [ {
-                                        "ErrorEquals": [ "TFCHTTPNotFound", "TFCHTTPBadRequest"],
+                                        "ErrorEquals": [ "TFCCustomError", "TFCHTTPBadRequest"],
                                         "Next": "Error Handler Backup",
                                         "ResultPath": "$.result"
                                      } ],
@@ -124,9 +118,6 @@
                                     "Type": "Task",
                                     "ResultPath": "$",
                                     "Resource": "${handle_error_lambda}",
-                                    "Parameters": {
-                                        "Error.$": "States.StringToJson($.result.Cause)"
-                                      },
                                     "End": true
                                  }
                             }
@@ -163,9 +154,14 @@
                 "BackoffRate": 2
              } ],
              "Catch": [ {
-                "ErrorEquals": [ "ClientError"]
+                "ErrorEquals": [ "ClientError"],
+                "Next": "Finished"
              } ],
+            "Next": "Finished"
+        },
+        "Finished": {
+            "Type": "Pass",
             "End": true
-        }
+         }
     }
 }
