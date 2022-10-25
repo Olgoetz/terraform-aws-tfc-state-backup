@@ -13,6 +13,12 @@ The solution backups all Terraform Cloud's workspaces' states in case of an acce
 - [x] CRON expression allows individual time for backup
 - [x] State backups of all Terraform Organizations' workspaces' are taken and stored in S3
 - [x] Report is sent to provided email addresses via SNS
+- [x] States may be replicated to another AWS account
+
+## Workflow
+
+![workflow](./stepfunctions_graph.png)
+
 
 ## Example
 
