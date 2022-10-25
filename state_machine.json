@@ -163,8 +163,7 @@
                 "BackoffRate": 2
              } ],
              "Catch": [ {
-                "ErrorEquals": [ "ClientError"],
-                "End": true
+                "ErrorEquals": [ "ClientError"]
              } ],
             "End": true
         }
