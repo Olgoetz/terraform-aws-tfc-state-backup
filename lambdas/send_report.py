@@ -24,27 +24,34 @@ def handler(event, context):
     :return: Success message
     """
 
-    print(json.dumps(event))
+    #print(json.dumps(event))
     
     ## SUCCESSFUL BACKUPS
     successful = []
     # Init call
     successful_init_response = s3_client.list_objects_v2(
         Bucket=TEMP_BUCKET,
-        Delimiter='success'
+        Prefix='success'
     )
+
+    logger.info("Init response for successful state backups:")
+    logger.info(json.loads(successful_init_response))
+
     successful = successful + successful_init_response['Contents']
 
+
+
     # Loop through the pages
-    successful_next_continuation_token = successful_init_response['NextContinuationToken']
-    while successful_next_continuation_token:
-        response = s3_client.list_objects_v2(
-            Bucket=TEMP_BUCKET,
-            Delimiter='success',
-            ContinuationToken = successful_next_continuation_token
-        )
-        successful_next_continuation_token = response['NextContinuationToken']
-        successful = successful + response['Contents']
+    if 'NextContinuationToken' in successful_init_response:
+        successful_next_continuation_token = successful_init_response['NextContinuationToken']
+        while successful_next_continuation_token:
+            response = s3_client.list_objects_v2(
+                Bucket=TEMP_BUCKET,
+                Prefix='success',
+                ContinuationToken = successful_next_continuation_token
+            )
+            successful_next_continuation_token = response['NextContinuationToken']
+            successful = successful + response['Contents']
 
     
     ## FAILED BACKUPS
@@ -52,32 +59,37 @@ def handler(event, context):
     # Init call
     failed_init_response = s3_client.list_objects_v2(
         Bucket=TEMP_BUCKET,
-        Delimiter='error'
+        Prefix='failed'
     )
     failed = failed + failed_init_response['Contents']
 
     # Loop through the pages
-    failed_next_continuation_token = failed_init_response['NextContinuationToken']
-    while failed_next_continuation_token:
-        response = s3_client.list_objects_v2(
-            Bucket=TEMP_BUCKET,
-            Delimiter='error',
-            ContinuationToken = failed_next_continuation_token
-        )
-        failed_next_continuation_token = response['NextContinuationToken']
-        failed = failed + response['Contents']
+    if 'NextContinuationToken' in failed_init_response:
+        failed_next_continuation_token = failed_init_response['NextContinuationToken']
+        while failed_next_continuation_token:
+            response = s3_client.list_objects_v2(
+                Bucket=TEMP_BUCKET,
+                Prefix='failed',
+                ContinuationToken = failed_next_continuation_token
+            )
+            failed_next_continuation_token = response['NextContinuationToken']
+            failed = failed + response['Contents']
 
 
     ## MESSAGE
     message = f"""
     
-{len(successful)} state backups were successful. More information can be found in the logs.
+{len(successful)} state backups were successful.
         
 ----------------------------------------------------------------------------------------
     
-{len(failed)} state backups failed:
+{len(failed)} state backups failed:  More information can be found in the logs.
     
-{json.dumps(failed, indent=4, sort_keys=False)}
+For instance you can fire the following in cloudwatch insights for /aws/lambda/TerraformStateBackup-create_workspace_state_backup:
+    fields @timestamp, @message
+    | sort @timestamp desc
+    | filter @message like "[ERROR]"
+    | limit 20
         
         
 """

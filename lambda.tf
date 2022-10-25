@@ -97,7 +97,7 @@ data "archive_file" "prepare_organizations" {
 
 resource "aws_lambda_function" "prepare_organizations" {
   filename         = data.archive_file.prepare_organizations.output_path
-  function_name    = "${local.resource_prefix}preapre-organizations"
+  function_name    = "${local.resource_prefix}prepare-organizations"
   role             = aws_iam_role.this.arn
   handler          = "prepare_organizations.handler"
   description      = "Provides a list org ids."
@@ -302,6 +302,33 @@ resource "aws_lambda_function" "handle_error" {
   }
 }
 
+# sources/clean_up.py
+
+data "archive_file" "clean_up" {
+  type        = "zip"
+  source_file = "${path.module}/lambdas/clean_up.py"
+  output_path = "${path.module}/clean_up.zip"
+
+}
+
+resource "aws_lambda_function" "clean_up" {
+  filename         = data.archive_file.clean_up.output_path
+  function_name    = "${local.resource_prefix}clean_up"
+  role             = aws_iam_role.this.arn
+  handler          = "clean_up.handler"
+  description      = "Emtpies the temp bucket."
+  source_code_hash = data.archive_file.clean_up.output_base64sha256
+  timeout          = "20"
+  runtime          = "python3.9"
+  layers           = [aws_lambda_layer_version.lambda_layer.arn]
+
+  environment {
+    variables = {
+      TEMP_BUCKET = aws_s3_bucket.temp.bucket
+    }
+  }
+}
+
 
 # CloudWatch
 # ---------------------------------------------------
@@ -314,10 +341,11 @@ resource "aws_cloudwatch_log_group" "this" {
     aws_lambda_function.prepare_workspaces.function_name,
     aws_lambda_function.create_workspace_state_backup.function_name,
     aws_lambda_function.send_report.function_name,
-    aws_lambda_function.handle_error.function_name
+    aws_lambda_function.handle_error.function_name,
+    aws_lambda_function.clean_up.function_name
   ])
   name              = "/aws/lambda/${each.value}"
-  retention_in_days = 30
+  retention_in_days = 14
 }
 
 # IAM
@@ -346,10 +374,15 @@ EOF
 # S3 Policy
 data "aws_iam_policy_document" "s3" {
   statement {
-    sid       = "S3"
-    effect    = "Allow"
-    actions   = ["s3:PutObject", "s3:List*", "s3:GetObject*"]
-    resources = [aws_s3_bucket.this.arn, "${aws_s3_bucket.this.arn}/*"]
+    sid     = "S3"
+    effect  = "Allow"
+    actions = ["s3:PutObject", "s3:List*", "s3:GetObject*"]
+    resources = [
+      aws_s3_bucket.this.arn,
+      "${aws_s3_bucket.this.arn}/*",
+      aws_s3_bucket.temp.arn,
+      "${aws_s3_bucket.temp.arn}/*"
+    ]
   }
 }
 

@@ -1,8 +1,7 @@
 import os
 import json
 import logging
-from lambdas.get_organizations import TEMP_BUCKET
-from terrasnek.api import TFC
+from terrasnek.api import TFC, TFCHTTPNotFound
 from helpers import functions
 
 # Environment variables
@@ -23,6 +22,8 @@ api = TFC(TFC_TOKEN, url=TFC_URL, verify=ssl_verify)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+class TFCCustomError(Exception):
+    pass
 
 def handler(event, context):
     """Gets all workspaces from Terraform Cloud
@@ -35,18 +36,30 @@ def handler(event, context):
     print(json.dumps(event))
 
     logger.info(f"TFC_URL: {TFC_URL}")
+
     # Configure api
     tfc_org = event["org_id"]
     api.set_org(tfc_org)
 
     # Get workspace ids
-    workspaces = api.workspaces.list_all()["data"]
+    logging.info(f"Getting workspaces for {tfc_org}...")
+    try:
+        workspaces = api.workspaces.list_all()["data"]
+    except TFCHTTPNotFound as e:
+        error = {
+            "org_id": tfc_org,
+            "message": f"Failed to query workspaces for {tfc_org}",
+            "error": e
+        }
+        raise TFCCustomError (error)
+ 
+
     workspace_ids = [
         {"ws_id": ws["id"], "ws_name": ws["attributes"]["name"]} for ws in workspaces]
 
     logger.info(workspace_ids)
-    file_name = f'/tmp/{tfc_org}/workspace_ids.json'
-    object_name = f'/workspaces/{tfc_org}.json'
+    file_name = "/tmp/workspace_ids.json"
+    object_name = f'workspaces/{tfc_org}.json'
     functions.save_json(file_name, workspace_ids)
     functions.upload_file(file_name, TEMP_BUCKET, object_name)
 

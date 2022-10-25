@@ -3,8 +3,7 @@ import json
 import logging
 import boto3
 import urllib.request
-from lambdas.get_organizations import TEMP_BUCKET
-from terrasnek.api import TFC
+from terrasnek.api import TFC, TFCHTTPNotFound
 from datetime import datetime
 from time import time
 import ssl
@@ -32,7 +31,8 @@ api = TFC(TFC_TOKEN, url=TFC_URL, verify=ssl_verify)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-
+class TFCCustomError(Exception):
+    pass
 
 def handler(event, context):
     """Gets the current state of a Terraform Cloud workspace and safes it to an s3 bucket
@@ -50,14 +50,23 @@ def handler(event, context):
     ws_name = event['ws']['ws_name']
     logger.info(f"Workspace ID: {ws_id}")
     logger.info(f"Workspace name: {ws_name}")
+    
+    api.set_org(tfc_org)
 
     # Get the url pointing to the latest state version
-   # try:
-    hosted_state_download_url = api.state_versions.get_current(
-        workspace_id=ws_id)['data']['attributes']['hosted-state-download-url']
-    logger.info(f"Hosted State Download Url: {hosted_state_download_url}")
-   # except TFCHTTPNotFound:
-   #     return ("Workspace does not have any state yet.")
+    try:
+    
+        hosted_state_download_url = api.state_versions.get_current(
+            workspace_id=ws_id)['data']['attributes']['hosted-state-download-url']
+        logger.info(f"Hosted State Download Url: {hosted_state_download_url}")
+    except TFCHTTPNotFound as e:
+        error = {
+            "org_id": tfc_org,
+            "ws_name": ws_name,
+            "message": "Failed to download workspace state",
+            "error": e
+        }
+        raise TFCCustomError (error)
 
     # File name based on a timestamp
     path = f'{tfc_org}/{ws_name}/{datetime.now().isoformat(timespec="milliseconds").replace("-", "/").replace("T", "/state_at_")}'
@@ -74,12 +83,13 @@ def handler(event, context):
     functions.upload_file(f'/tmp/{ws_id}_state.json', S3_BUCKET, file_name)
 
     # Upload to temp s3
-    logging.info("Uploading success info to temp s3...")
-    file_name_temp = f'/success/{tfc_org}/{ws_name}.json'
-    msg = {'message': f'Backup successfully taken for {tfc_org}/{ws_name} (S3 Path: {file_name}'}
-    functions.upload(msg, TEMP_BUCKET, file_name_temp)
-
-    return msg
+    file_name_temp = f'success/{tfc_org}_{ws_name}.json'
+    logging.info(f"Uploading '{file_name_temp}' to success/ info to temp s3...")
+    msg = {"message": f"Backup successfully taken for {tfc_org}/{ws_name} (S3 Path: {file_name}"}
+    functions.save_json("/tmp/msg.json", msg)
+    functions.upload_file("/tmp/msg.json", TEMP_BUCKET, file_name_temp)
+    
+    return json.dumps(msg)
 
 
 #handler({"org_id": "Oliver", "ws_id": 'ws-xGsTy18ggUmNQ2cB'}, {})

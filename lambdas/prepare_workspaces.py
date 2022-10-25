@@ -1,25 +1,9 @@
-import os
 import json
 import logging
-from lambdas.get_organizations import TEMP_BUCKET
-from terrasnek.api import TFC
 from helpers import functions
 
-# Environment variables
-TFC_TOKEN = os.getenv("TFC_TOKEN", None)
-TFC_URL = os.getenv("TFC_URL", "https://app.terraform.io")
-SSL_VERIFY = os.getenv("SSL_VERIFY", False)
-TEMP_BUCKET=os.getenv("TEMP_BUCKET", None)
 
-if SSL_VERIFY == 'false' or SSL_VERIFY is False:
-    ssl_verify = False
-else:
-    ssl_verify = True
 
-# Initialize api
-api = TFC(TFC_TOKEN, url=TFC_URL, verify=ssl_verify)
-
-# Logger
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -33,10 +17,9 @@ def handler(event, context):
     """
 
     print(json.dumps(event))
-    logger.info(f"TFC_URL: {TFC_URL}")
 
     key = event["key"]
-    bucket = event["bucket"]
+    bucket = event["bucket"].split(":")[-1].split(".")[0]
 
 
     # Extract data

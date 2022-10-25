@@ -91,7 +91,7 @@ resource "aws_s3_bucket_policy" "this" {
 }
 
 
-################ TEMPS3 ################
+################ TEMP S3 ################
 # Bucket that functions as temporary storage for step functions payloads
 #################################################
 
@@ -108,20 +108,6 @@ resource "aws_s3_bucket_acl" "temp" {
   acl    = "private"
 }
 
-# Lifecycle
-resource "aws_s3_bucket_lifecycle_configuration" "temp" {
-  bucket = aws_s3_bucket.this.id
-
-  rule {
-    id     = "expire"
-    status = "Enabled"
-
-
-    expiration {
-      days = 10
-    }
-  }
-}
 
 # Enable encryption
 resource "aws_s3_bucket_server_side_encryption_configuration" "temp" {
@@ -134,16 +120,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "temp" {
     }
   }
 }
-
-# Activate versioning
-resource "aws_s3_bucket_versioning" "temp" {
-  bucket = aws_s3_bucket.temp.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-
-
 
 
 # Enforce private

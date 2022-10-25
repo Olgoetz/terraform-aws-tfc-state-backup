@@ -13,7 +13,8 @@ resource "aws_sfn_state_machine" "state_machine" {
     prepare_workspaces_lambda            = aws_lambda_function.prepare_workspaces.arn,
     create_workspace_state_backup_lambda = aws_lambda_function.create_workspace_state_backup.arn,
     send_report_lambda                   = aws_lambda_function.send_report.arn,
-    handle_error_lambda                  = aws_lambda_function.handle_error.arn
+    handle_error_lambda                  = aws_lambda_function.handle_error.arn,
+    clean_up_lambda                      = aws_lambda_function.clean_up.arn
   })
 }
 
@@ -54,7 +55,8 @@ data "aws_iam_policy_document" "step_functions_policy" {
       aws_lambda_function.prepare_workspaces.arn,
       aws_lambda_function.create_workspace_state_backup.arn,
       aws_lambda_function.send_report.arn,
-      aws_lambda_function.handle_error.arn
+      aws_lambda_function.handle_error.arn,
+      aws_lambda_function.clean_up.arn
     ]
   }
 
@@ -63,6 +65,7 @@ data "aws_iam_policy_document" "step_functions_policy" {
     actions   = ["sns:Publish"]
     resources = [aws_sns_topic.report.arn]
   }
+
 
 }
 

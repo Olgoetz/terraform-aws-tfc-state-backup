@@ -79,7 +79,7 @@
                     "Prepare Workspaces": {
                         "Type": "Task",
                         "Resource": "${prepare_workspaces_lambda}",
-                        "ResultPath":"$.ws",
+                        "ResultPath":"$",
                         "Next": "Create Workspace State Backup",
                         "Retry": [ {
                             "ErrorEquals": [ "Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
@@ -149,6 +149,22 @@
                 "IntervalSeconds": 2,
                 "MaxAttempts": 6,
                 "BackoffRate": 2
+             } ],
+            "End": "Empty Bucket"
+        },
+        "Empty Bucket": {
+            "Type": "Task",
+            "Resource": "${clean_up_lambda}",
+            "ResultPath": "$",
+            "Retry": [ {
+                "ErrorEquals": [ "Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+             } ],
+             "Catch": [ {
+                "ErrorEquals": [ "ClientError"],
+                "End": true
              } ],
             "End": true
         }

@@ -29,12 +29,16 @@ def handler(event, context):
     ws_name = event['ws']['ws_name']
 
     file_name = f'/tmp/{tfc_org}_{ws_name}.json'
-    object_name = f'/error/{tfc_org}_{ws_name}.json'
+    object_name = f'failed/{tfc_org}_{ws_name}.json'
     functions.save_json(file_name, event)
 
     logger.info("Uploading error to temp s3 bucket...")
     functions.upload_file(file_name, TEMP_BUCKET, object_name)
 
     
-
-    return "Error uploaded!"
+    msg = {
+        "org_id": tfc_org,
+        "ws_name": ws_name,
+        "message": "Failed to download workspace state."
+    }
+    return msg

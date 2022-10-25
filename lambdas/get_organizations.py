@@ -45,7 +45,7 @@ def handler(event, context):
     result = [{"org_id": org["id"]} for org in orgs["data"]]
     logger.info(result)
     file_name = "/tmp/org_list.json"
-    object_name = "/orgas/org_list.json"
+    object_name = "orgas/org_list.json"
     functions.save_json(file_name, result)
     functions.upload_file(file_name, TEMP_BUCKET, object_name)
     return {
