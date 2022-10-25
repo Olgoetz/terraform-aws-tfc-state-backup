@@ -6,7 +6,7 @@ import logging
 import boto3
 import urllib.request
 from botocore.exceptions import ClientError
-from terrasnek.api import TFC
+from terrasnek.api import TFC, TFCHTTPNotFound
 from datetime import datetime
 from time import time
 from helpers import functions
@@ -31,8 +31,8 @@ api = TFC(TFC_TOKEN, url=TFC_URL, verify=ssl_verify)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-orgs = api.orgs.list()
-
+class TFCCustomError(Exception):
+    pass
 
 def handler(event, context):
     """Return a list of Terraform Cloud organizations
@@ -42,12 +42,25 @@ def handler(event, context):
     :return: List of all Terraform Cloud organizations
     """
 
+    logger.info("Getting all orgas...")
+    try:
+        orgs = api.orgs.list()
+
+    except TFCHTTPNotFound as e:
+        error = {
+            "message": "Failed to query all orgas from TFC",
+            "error": e
+        }
+        raise TFCCustomError (error)
+
     result = [{"org_id": org["id"]} for org in orgs["data"]]
     logger.info(result)
+    
     file_name = "/tmp/org_list.json"
     object_name = "orgas/org_list.json"
     functions.save_json(file_name, result)
     functions.upload_file(file_name, TEMP_BUCKET, object_name)
+
     return {
         "key": object_name,
         "bucket": f"arn:aws:s3:::{TEMP_BUCKET}"
