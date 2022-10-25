@@ -27,6 +27,7 @@ def handler(event, context):
     #print(json.dumps(event))
     
     ## SUCCESSFUL BACKUPS
+    
     successful = []
     # Init call
     successful_init_response = s3_client.list_objects_v2(
@@ -38,8 +39,6 @@ def handler(event, context):
     logger.info(successful_init_response)
 
     successful = successful + successful_init_response['Contents']
-
-
 
     # Loop through the pages
     if 'NextContinuationToken' in successful_init_response:
@@ -56,14 +55,17 @@ def handler(event, context):
     
     ## FAILED BACKUPS
     
-    logger.info("Init response for failed state backups:")
-    logger.info(failed_init_response)
     failed = []
+
     # Init call
     failed_init_response = s3_client.list_objects_v2(
         Bucket=TEMP_BUCKET,
         Prefix='failed'
     )
+
+    logger.info("Init response for failed state backups:")
+    logger.info(failed_init_response)
+    
     failed = failed + failed_init_response['Contents']
 
     # Loop through the pages
