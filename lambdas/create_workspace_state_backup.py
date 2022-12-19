@@ -60,13 +60,8 @@ def handler(event, context):
             workspace_id=ws_id)['data']['attributes']['hosted-state-download-url']
         logger.info(f"Hosted State Download Url: {hosted_state_download_url}")
     except TFCHTTPNotFound as e:
-        error = {
-            "org_id": tfc_org,
-            "ws_name": ws_name,
-            "message": "Failed to download workspace state",
-            "error": e
-        }
-        raise TFCCustomError (error)
+        logger.error(e)
+        raise TFCCustomError("Failed to download workspace state")
 
     # File name based on a timestamp
     path = f'{tfc_org}/{ws_name}/{datetime.now().isoformat(timespec="milliseconds").replace("-", "/").replace("T", "/state_at_")}'
@@ -90,6 +85,3 @@ def handler(event, context):
     functions.upload_file("/tmp/msg.json", TEMP_BUCKET, file_name_temp)
     
     return msg
-
-
-#handler({"org_id": "Oliver", "ws_id": 'ws-xGsTy18ggUmNQ2cB'}, {})
