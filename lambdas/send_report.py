@@ -40,17 +40,17 @@ def handler(event, context):
 
     successful = successful + successful_init_response['Contents']
 
+    continuation_token = successful_init_response.get('NextContinuationToken')
+
     # Loop through the pages
-    if 'NextContinuationToken' in successful_init_response:
-        successful_next_continuation_token = successful_init_response['NextContinuationToken']
-        while successful_next_continuation_token:
-            response = s3_client.list_objects_v2(
-                Bucket=TEMP_BUCKET,
-                Prefix='success',
-                ContinuationToken = successful_next_continuation_token
-            )
-            successful_next_continuation_token = response['NextContinuationToken']
-            successful = successful + response['Contents']
+    while continuation_token:
+        response = s3_client.list_objects_v2(
+            Bucket=TEMP_BUCKET,
+            Prefix='success',
+            ContinuationToken = continuation_token
+        )
+        continuation_token = response.get('NextContinuationToken')
+        successful = successful + response['Contents']
 
     
     ## FAILED BACKUPS
@@ -68,18 +68,17 @@ def handler(event, context):
     
     failed = failed + failed_init_response['Contents']
 
-    # Loop through the pages
-    if 'NextContinuationToken' in failed_init_response:
-        failed_next_continuation_token = failed_init_response['NextContinuationToken']
-        while failed_next_continuation_token:
-            response = s3_client.list_objects_v2(
-                Bucket=TEMP_BUCKET,
-                Prefix='failed',
-                ContinuationToken = failed_next_continuation_token
-            )
-            failed_next_continuation_token = response['NextContinuationToken']
-            failed = failed + response['Contents']
+    continuation_token = failed_init_response.get('NextContinuationToken')
 
+    # Loop through the pages
+    while continuation_token:
+        response = s3_client.list_objects_v2(
+            Bucket=TEMP_BUCKET,
+            Prefix='success',
+            ContinuationToken=continuation_token
+        )
+        continuation_token = response.get('NextContinuationToken')
+        failed = failed + response['Contents']
 
     ## MESSAGE
     message = f"""
