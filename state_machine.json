@@ -56,7 +56,7 @@
     "Backup Workspace State": {
       "Type": "Map",
       "ItemsPath": "$.org_ids",
-      "ResultPath": "$",
+      "ResultPath": null,
       "MaxConcurrency": 5,
       "Next": "Send Report",
       "Iterator": {
