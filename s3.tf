@@ -97,12 +97,6 @@ resource "aws_s3_bucket" "temp" {
   force_destroy = var.s3_force_destroy
 }
 
-# S3 ACL
-resource "aws_s3_bucket_acl" "temp" {
-  bucket = aws_s3_bucket.temp.id
-  acl    = "private"
-}
-
 
 # Enable encryption
 resource "aws_s3_bucket_server_side_encryption_configuration" "temp" {
