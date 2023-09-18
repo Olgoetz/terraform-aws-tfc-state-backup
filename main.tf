@@ -10,7 +10,7 @@ terraform {
 
 data "aws_caller_identity" "current" {}
 locals {
-  resource_prefix = "TerraformStateBackup-"
+  resource_prefix = "${var.prefix}-"
 }
 
 

@@ -10,11 +10,6 @@ resource "aws_s3_bucket" "this" {
   force_destroy = var.s3_force_destroy
 }
 
-# S3 ACL
-resource "aws_s3_bucket_acl" "this" {
-  bucket = aws_s3_bucket.this.id
-  acl    = "private"
-}
 
 # Lifecycle
 resource "aws_s3_bucket_lifecycle_configuration" "this" {

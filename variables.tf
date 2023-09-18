@@ -10,6 +10,13 @@ variable "default_tags" {
   default     = {}
 }
 
+variable "prefix" {
+  type        = string
+  default     = "TFC-StateBackup"
+  description = "Prefix for all resources"
+}
+
+
 variable "tfc_token" {
   type        = string
   description = "Token for authenticating against Terraform Cloud"

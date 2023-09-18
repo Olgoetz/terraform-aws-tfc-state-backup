@@ -17,3 +17,8 @@ output "s3_replication_role_arn" {
   value       = try(aws_iam_role.replication[0].arn, "")
   description = "Role ARN for object replication"
 }
+
+output "lambda_role_arn" {
+  value       = aws_iam_role.this.arn
+  description = "Role ARN of the lambda"
+}
